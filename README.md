@@ -1,2 +1,2 @@
 # MachineLearningLabs
-My answers for Machine Learning labs
+Machine Learning labs & projects
