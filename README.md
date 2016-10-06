@@ -1,2 +1,2 @@
-# MachineLearningLabs
+# MachineLearning
 Machine Learning labs & projects
