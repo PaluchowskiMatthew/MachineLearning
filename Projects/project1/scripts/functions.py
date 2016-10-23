@@ -76,10 +76,6 @@ def calculate_logistic_gradient(y, tx, w):
     # ***************************************************
     sig_function  = np.vectorize(sigmoid)
     sig = sig_function(np.dot(tx, w))
-    # print(sig.shape)
-    # print(y.shape)
-    # print(tx.T.shape)
-    #Tracer()()
     return np.dot(tx.T, (sig - y) )
 
 def logistic_regression(y, tx, gamma, max_iter):
@@ -90,10 +86,6 @@ def logistic_regression(y, tx, gamma, max_iter):
     # start the logistic regression
     w = np.zeros((tx.shape[1],1))
     for iter in range(max_iter):
-        # get loss and update w.
-        # ***************************************************
-        # compute the cost
-        #loss = calculate_loss_by_likelyhood(y, tx, w)
         # ***************************************************
         # compute the gradient
         gradient = calculate_logistic_gradient(y, tx, w)
@@ -101,42 +93,45 @@ def logistic_regression(y, tx, gamma, max_iter):
         # update w
         # Tracer()()
         w = w - gamma * gradient
-    #print(gradient)
-    # loss = calculate_loss_by_likelyhood(y, tx, w)
-    loss = compute_loss(y, tx, w)
+    loss = calculate_loss_by_likelyhood(y, tx, w)
+    # loss = compute_loss(y, tx, w)
     return loss, w
+
+def calculate_hessian(y, tx, w):
+    """return the hessian of the loss function."""
+    # ***************************************************
+    sig_function  = np.vectorize(sigmoid)
+    sig = sig_function(np.dot(tx, w))
+    s_nn = sig*(1-sig)
+    Tracer()()
+    S = np.diag(np.ndarray.flatten(s_nn))
+    return np.dot(tx.T, np.dot(S, tx))
 
 def penalized_logistic_regression(y, tx, w, lambd):
     """return the loss, gradient, and hessian."""
     # ***************************************************
     # return loss, gradient, and hessian
-    loss = calculate_loss(y, tx, w)
-    gradient = calculate_gradient(y, tx, w)
+    #loss = calculate_loss_by_likelyhood(y, tx, w)
+    gradient = calculate_logistic_gradient(y, tx, w)
     hessian = calculate_hessian(y, tx, w)
-    loss_penalty = lambd * np.sum(np.power(w, 2))
+    #loss_penalty = lambd * np.sum(np.power(w, 2))
     gradient_penalty = lambd * 2 * w
-    return loss + loss_penalty, gradient + gradient_penalty, hessian
+    return gradient + gradient_penalty, hessian
 
 def reg_logistic_regression(y, tx, lambd , gamma, max_iters):
     """
     Penalized logistic regression using gradient descent.
     Return the loss and the updated w.
     """
-    threshold = 1e-8
-    losses = []
-
     # start the logistic regression
-    for iter in range(max_iter):
+    w = np.zeros((tx.shape[1],1))
+    for iter in range(max_iters):
         # get loss and update w.
-        loss, gradient, hessian = penalized_logistic_regression(y, tx, w, lambda_)
+        gradient, hessian = penalized_logistic_regression(y, tx, w, lambd)
         # ***************************************************
         # update w
         w = w - gamma * np.dot(np.linalg.inv(hessian), gradient)
         # log info
-        if iter % 500 == 0:
-            print("Current iteration={i}, the loss={l}, w={w}".format(i=iter, l=loss, w=w))
-        # converge criteria
-        losses.append(loss)
-        if len(losses) > 1 and np.abs(losses[-1] - losses[-2]) < threshold:
-            break
-        return loss, w
+    loss_penalty = lambd * np.sum(np.power(w, 2))
+    loss = calculate_loss_by_likelyhood(y, tx, w) + loss_penalty
+    return loss, w
