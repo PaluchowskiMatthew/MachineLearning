@@ -135,3 +135,55 @@ def reg_logistic_regression(y, tx, lambd , gamma, max_iters):
     loss_penalty = lambd * np.sum(np.power(w, 2))
     loss = calculate_loss_by_likelyhood(y, tx, w) + loss_penalty
     return loss, w
+
+
+##
+#   CROSS VALIDATION
+##
+
+def build_k_indices(y, k_fold, seed):
+    """build k indices for k-fold."""
+    num_row = y.shape[0]
+    interval = int(num_row / k_fold)
+    np.random.seed(seed)
+    indices = np.random.permutation(num_row)
+    k_indices = [indices[k * interval: (k + 1) * interval]
+                 for k in range(k_fold)]
+    return np.array(k_indices)
+
+def cross_validation(y, x, k_fold, seed, lambd,):
+    """return the loss of ridge regression."""
+    loss_tr, loss_te = 0.0, 0.0
+    k_indices = build_k_indices(y, k_fold, seed)
+
+    for fold in range(0, k_fold):
+        # ***************************************************
+        # get k'th subgroup in test, others in train
+        # ***************************************************
+        y_test, y_train, x_test, x_train = np.array([]), np.array([]), np.empty((0,x.shape[1]), float), np.empty((0,x.shape[1]), float)
+        for row in k_indices:
+            x_temp, y_temp = np.empty((0,x.shape[1]), float), np.array([])
+            kth_subgroup = k_indices[k_indices.shape[0]-1-fold]
+
+            for j in np.nditer(row):
+                x_row = np.array([x[j]])
+                x_temp = np.vstack((x_temp, x_row))
+                y_temp = np.append(y_temp, y[j])
+
+            if  np.array_equal(row, kth_subgroup):
+                x_test = np.vstack((x_test, x_temp))
+                y_test = np.append(y_test, y_temp)
+            else:
+                x_train = np.vstack((x_train, x_temp))
+                y_train = np.append(y_train, y_temp)
+
+        train_mse, train_weight = ridge_regression(y_train, x_train, lambd)
+
+        # ***************************************************
+        # calculate the loss for train and test data
+        # ***************************************************
+        test_mse = compute_loss(y_test, x_test, train_weight)
+        loss_tr += np.sqrt(2*train_mse)
+        loss_te += np.sqrt(2*test_mse)
+
+    return loss_tr/k_fold, loss_te/k_fold

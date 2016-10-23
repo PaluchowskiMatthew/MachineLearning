@@ -23,6 +23,9 @@ def compute_loss(y, tx, w):
     return calculate_mse(e)
     # return calculate_mae(e)
 
+def compute_rmse_loss(mse_loss):
+    return np.sqrt(2*mse_loss)
+
 def compute_MSE(y, tx, w):
     """Calculate the loss.
 
