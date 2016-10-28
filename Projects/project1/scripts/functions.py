@@ -12,7 +12,6 @@ def build_poly(x, degree):
     phi[:, 0] = 1
     for i in range(degree):
         phi[:, i+1] = np.multiply(phi[:, i],x)
-    
     return phi
 
 #def compute_loss(y, tx, w):
@@ -139,22 +138,32 @@ def stochastic_gradient_descent(y, tx, initial_w, batch_size, max_epochs, gamma)
 # ************* LOGISTIC REGRESSION ************************************************
 def calculate_hessian(y, tx, w):
     """return the hessian of the loss function."""
-    sig = sigmoid(np.dot(tx, w))
+    sig_function  = np.vectorize(sigmoid)
+    sig = sig_function(np.dot(tx, w))
     S_diag = np.multiply(sig, 1-sig)
     S = np.diagflat(S_diag)
     H = np.dot(np.transpose(tx), np.dot(S,tx))
     return H
 
-def sigmoid(t):
+def sigmoid(x):
     """apply sigmoid function on t."""
-    sig = np.zeros((t.shape[0], 1))
-    for i in range(len(t)):
-        if t[i]>100:    
-            sig[i] = 0.99999
-        elif t[i] < 100:
-            sig[i] = 0.000001
-        else:
-            sig[i] = 1/(1+np.exp(-t[i]))
+    #sig = np.zeros((t.shape[0], 1))
+    #sig = 1/(1+np.exp(-t))
+    #for i in range(len(t)):
+    #    if t[i]>100:    
+    #        sig[i] = 0.99999
+    #    elif t[i] < 100:
+    #        sig[i] = 0.000001
+    #    else:
+    #        sig[i] = 1/(1+np.exp(-t[i]))
+
+    if x >= 0:
+        z = np.exp(-x)
+        return 1 / (1 + z)
+    else:
+        z = np.exp(x)
+        return z / (1 + z)
+
     return sig
 
 def calculate_loss(y, tx, w):
@@ -165,50 +174,65 @@ def calculate_loss(y, tx, w):
 
 def calculate_gradient(y, tx, w):
     """compute the gradient of loss."""
-    L_grad = np.dot(np.transpose(tx), sigmoid(np.dot(tx, w))-y)
+    sig_function  = np.vectorize(sigmoid)
+    sig = sig_function(np.dot(tx, w))
+    L_grad = np.dot(np.transpose(tx), sig-y)
     return L_grad
 
-def learning_by_gradient_descent(y, tx, w, alpha):
+def learning_by_gradient_descent(y, tx, alpha, max_iters):
     """
     Do one step of gradient descen using logistic regression.
     Return the loss and the updated w.
     """
+    w = np.ones((tx.shape[1],1))
+    for iter in range(max_iters):
+        L_grad = calculate_gradient(y, tx, w)
+        w = w - np.dot(alpha, L_grad)
     mse = compute_loss(y, tx, w)
     rmse = np.sqrt(2*mse)
-    L_grad = calculate_gradient(y, tx, w)
-    w = w - np.dot(alpha, L_grad)
+        #print("iter{i}, rmse: {l}".format(i=iter, l=rmse))
     return rmse, w
 
 def logistic_regression(y, tx, w):
     """return the loss, gradient, and hessian."""
     #loss = calculate_loss(y, tx, w)
-    mse = compute_loss(y, tx, w)
-    rmse = np.sqrt(2*mse)
+    #mse = compute_loss(y, tx, w)
+    #rmse = np.sqrt(2*mse)
+    rmse = 0
     grad = calculate_gradient(y, tx, w)
     hess = calculate_hessian(y, tx, w)
     return rmse, grad, hess
 
-def learning_by_newton_method(y, tx, w, alpha):
+def learning_by_newton_method(y, tx, alpha, max_iters):
     """
     Do one step on Newton's method.
     return the loss and updated w.
     """
-    rmse, grad, hess = logistic_regression(y, tx, w)
-    w = w - np.dot(alpha, np.linalg.solve(hess, grad))
+    w = np.ones((tx.shape[1],1))
+    for iter in range(max_iters):
+        rmse, grad, hess = logistic_regression(y, tx, w)
+        if (np.linalg.matrix_rank(hess)==hess.shape[0]):
+            w = w - np.dot(alpha, np.linalg.solve(hess, grad))
     return rmse, w
 
 def IRLS(y, tx, w):
-    sig = sigmoid(np.dot(tx, w))
+    sig_function  = np.vectorize(sigmoid)
+    sig = sig_function(np.dot(tx, w))
     S_diag = np.multiply(sig, 1-sig)
     S = np.diagflat(S_diag)
     z = np.dot(tx, w)+np.linalg.solve(S, y-sig)
-    loss = calculate_loss(y, tx, w)
+    #loss = calculate_loss(y, tx, w)
+    loss=0
     return S, z, loss
 
-def learning_by_IRLS(y, tx, w):
-    S, z, loss = IRLS(y, tx, w)
-    txt_S = np.dot(np.transpose(tx), S)
-    w = np.linalg.solve(np.dot(txt_S, tx),np.dot(txt_S, z))
+def learning_by_IRLS(y, tx, max_iters):
+    w = np.ones((tx.shape[1],1))
+    for iter in range(max_iters):
+        S, z, loss = IRLS(y, tx, w)
+        txt_S = np.dot(np.transpose(tx), S)
+        txt_S_tx = np.dot(txt_S, tx)
+        txt_S_z = np.dot(txt_S, z)
+        w = np.linalg.solve(txt_S_tx,txt_S_z)
     return loss, w
 
 def penalized_logistic_regression(y, tx, w, lambd):
@@ -219,8 +243,9 @@ def penalized_logistic_regression(y, tx, w, lambd):
     gradient = calculate_gradient(y, tx, w)
     hessian = calculate_hessian(y, tx, w)
     #loss_penalty = lambd * np.sum(np.power(w, 2))
-    gradient_penalty = lambd * 2 * w / np.linalg.norm(w)
-    return gradient + gradient_penalty, hessian
+    gradient_penalty = lambd * 2 * w
+    hessian_penalty = np.diagflat(2*lambd)
+    return gradient + gradient_penalty, hessian+hessian_penalty
  
 def reg_logistic_regression(y, tx, lambd , gamma, max_iters):
     """
@@ -228,14 +253,11 @@ def reg_logistic_regression(y, tx, lambd , gamma, max_iters):
    Return the loss and the updated w.
    """
     # start the logistic regression
-    w = np.zeros((tx.shape[1],1))
+    w = np.ones((tx.shape[1],1))
     for iter in range(max_iters):
-        # get loss and update w.
         gradient, hessian = penalized_logistic_regression(y, tx, w, lambd)
-        # ***************************************************
-        # update w
         w = w - gamma * np.linalg.solve(hessian, gradient)
-        # log info
+        
     loss_penalty = lambd * np.sum(np.power(w, 2))
     loss = compute_RMSE(y, tx, w) + loss_penalty
     return loss, w
@@ -243,22 +265,17 @@ def reg_logistic_regression(y, tx, lambd , gamma, max_iters):
 def split_data(x, y, ratio, seed=1):
     """split the dataset based on the split ratio."""
     # set seed
-    """split the dataset based on the split ratio."""
-    # set seed
-    np.random.seed(seed)
-    shuffled_x = np.random.permutation(x)
-    np.random.seed(seed)
-    shuffled_y = np.random.permutation(y)
-    
-    train_x_size = int(shuffled_x.shape[0] * ratio)
-    training_x = shuffled_x[:train_x_size]
-    test_x = shuffled_x[(train_x_size):]
-    
-    train_y_size = int(shuffled_y.shape[0] * ratio)
-    training_y = shuffled_y[:train_y_size]
-    test_y = shuffled_y[(train_y_size):]
 
-    return training_x, test_x, training_y, test_y
+    np.random.seed(seed)
+    size = y.shape[0]
+    indices = np.random.permutation(size)
+    y_test, y_train, x_test, x_train = np.array([]), np.array([]), np.empty((0,x.shape[1]), float), np.empty((0,x.shape[1]), float)
+    x_train = x[indices[: int(ratio*size)]]
+    y_train = y[indices[: int(ratio*size)]]
+    x_test = x[indices[int(ratio*size) :]]
+    y_test = y[indices[int(ratio*size) :]]
+
+    return x_train, x_test, y_train, y_test
 
 def build_k_indices(y, k_fold, seed):
     """build k indices for k-fold."""
@@ -272,38 +289,87 @@ def build_k_indices(y, k_fold, seed):
 
 def cross_validation(y, x, k_fold, seed, lambd, max_iter):
     """return the loss of ridge regression."""
+    gamma = 0.001
     loss_tr, loss_te = 0.0, 0.0
     k_indices = build_k_indices(y, k_fold, seed)
-    max_iters=1000
-    weights = np.zeros((k_fold, x.shape[1]+1))
-    for fold in range(0, k_fold):
-        # ***************************************************
-        # get k'th subgroup in test, others in train
-        # ***************************************************
-        y_test, y_train, x_test, x_train = np.array([]), np.array([]), np.empty((0,x.shape[1]), float), np.empty((0,x.shape[1]), float)
-        x_train = x[k_indices[fold, :]]
-        y_train = y[k_indices[fold, :]]
+    lambds = np.logspace(-3, 0, 10)
+    weight_folds = np.zeros((x.shape[1]+1, 1))
+    weights = np.zeros((len(lambds), x.shape[1]+1))
+    rmse_tr = []
+    rmse_te = []
+    i = 0
+    for lamb in lambds:    
+        for fold in range(0, k_fold):
+            #Create test and train sets
+            y_test, y_train, x_test, x_train = np.array([]), np.array([]), np.empty((0,x.shape[1]), float), np.empty((0,x.shape[1]), float)
+            x_train = x[k_indices[fold, :]]
+            y_train = y[k_indices[fold, :]]
+            x_test = np.delete(x, k_indices[fold, :], axis=0)
+            y_test = np.delete(y, k_indices[fold, :], axis=0)
+            tx_train = np.c_[np.ones((y_train.shape[0], 1)), x_train]
+            tx_test = np.c_[np.ones((y_test.shape[0], 1)), x_test]
+            #tx_train, x_tr_mean, x_tr_std = standardize(x_train)
+            #tx_test, x_te_mean, x_te_std = standardize(x_test)
 
-        x_test = np.delete(x, k_indices[fold, :], axis=0)
-        y_test = np.delete(y, k_indices[fold, :], axis=0)
-
-        tx_train, x_tr_mean, x_tr_std = standardize(x_train)
-        tx_test, x_te_mean, x_te_std = standardize(x_test)
-        w = np.zeros((tx_train.shape[1], 1))
-
-        for iter in range(max_iter):
-            train_rmse, w = learning_by_newton_method(y_train, tx_train, w, lambd)
+            loss, w = reg_logistic_regression(y_train, tx_train, lamb, gamma, max_iter)
+            weight_folds[:,0] += w[:,0]
+            test_mse = compute_loss(y_test, tx_test, w)
+            train_mse = compute_loss(y_train, tx_train, w)
+            loss_tr += np.sqrt(2*train_mse)
+            loss_te += np.sqrt(2*test_mse)
+        weight_folds = np.reshape(weight_folds/k_fold, tx_train.shape[1])
+        weights[i] = weight_folds
+        rmse_tr.append(loss_tr/k_fold)
+        rmse_te.append(loss_te/k_fold)
+        i += 1
+        print("lambda done")
+                #test_mse = compute_loss(y_test, tx_test, w)
+                #train_mse = compute_loss(y_train, tx_train, w)
+                #loss_tr[fold, i] = np.sqrt(2*train_mse)
+                #loss_te[fold, i]= np.sqrt(2*test_mse)
+        #for iter in range(max_iter):
+            #train_rmse, w = learning_by_newton_method(y_train, tx_train, w, lambd)
                                     #ridge_regression(y_train, x_train, lambd)
                                     #least_squares_GD(y_train, x_train, lambd, max_iters)
                                     #ridge_regression(y_train, x_train, lambd)
         # ***************************************************
         # calculate the loss for train and test data
         # ***************************************************
+        #test_mse = compute_loss(y_test, tx_test, w)
+        #train_mse = compute_loss(y_train, tx_train, w)
+        #loss_tr += np.sqrt(2*train_mse)
+        #loss_te += np.sqrt(2*test_mse)
+        #w = np.reshape(w, tx_train.shape[1])
+        #weights[fold] = w
+
+    return weights, loss_tr, loss_te
+
+def cross_validation_LS(y, x, k_fold, seed):
+    """return the loss of ridge regression."""
+    k_indices = build_k_indices(y, k_fold, seed)
+    weights = np.zeros((k_fold, x.shape[1]+1))
+    rmse_tr = []
+    rmse_te = []
+
+    for fold in range(0, k_fold):
+        #Create test and train sets
+        y_test, y_train, x_test, x_train = np.array([]), np.array([]), np.empty((0,x.shape[1]), float), np.empty((0,x.shape[1]), float)
+        x_test = x[k_indices[fold, :]]
+        y_test = y[k_indices[fold, :]]
+        x_train = np.delete(x, k_indices[fold, :], axis=0)
+        y_train = np.delete(y, k_indices[fold, :], axis=0)
+        tx_train = np.c_[np.ones((y_train.shape[0], 1)), x_train]
+        tx_test = np.c_[np.ones((y_test.shape[0], 1)), x_test]
+        #tx_train, x_tr_mean, x_tr_std = standardize(x_train)
+        #tx_test, x_te_mean, x_te_std = standardize(x_test)
+
+        w, loss = least_squares(y_train, tx_train)
         test_mse = compute_loss(y_test, tx_test, w)
         train_mse = compute_loss(y_train, tx_train, w)
-        loss_tr += np.sqrt(2*train_mse)
-        loss_te += np.sqrt(2*test_mse)
+        rmse_tr.append(np.sqrt(2*train_mse))
+        rmse_te.append(np.sqrt(2*test_mse))
+        
         w = np.reshape(w, tx_train.shape[1])
         weights[fold] = w
 
-    return weights, loss_tr/k_fold, loss_te/k_fold
+    return weights, rmse_tr, rmse_te
