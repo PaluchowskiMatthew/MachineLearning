@@ -1,7 +1,8 @@
 import numpy as np
 import datetime
 from costs import *
-from functions import *
+from implementations import *
+from helpers import *
 import matplotlib.pyplot as plt
 from proj1_helpers import batch_iter
 from IPython.core.debugger import Tracer
@@ -13,13 +14,11 @@ def logistic_regression_dataset_gammas_test(y, y_test, train_dataset, test_datas
     start_time = datetime.datetime.now()
     for gamma in np.nditer(gammas):
 
-        logistic_regression_loss, logistic_regression_w = logistic_regression(np.array([y]).T, train_dataset, gamma, max_iters)
+        initial_w = np.zeros((train_dataset.shape[1],1))
+        logistic_regression_w, logistic_regression_loss = logistic_regression(np.array([y]).T, train_dataset, initial_w, max_iters, gamma)
 
-        # Print result
-        logistic_regression_loss = compute_rmse_loss(logistic_regression_loss)
         train_losses = np.append(train_losses, logistic_regression_loss)
-        test_mse = compute_loss(y_test, test_dataset, logistic_regression_w[:,0])
-        test_rmse = np.sqrt(2*test_mse)
+        test_rmse = compute_RMSE(y_test, test_dataset, logistic_regression_w[:,0])
         test_losses = np.append(test_losses, test_rmse)
 
         weights = np.vstack((weights, logistic_regression_w.T))
@@ -39,12 +38,10 @@ def logistic_regression_dataset_gammas_test(y, y_test, train_dataset, test_datas
 
 def logistic_regression_dataset_single_gamma_test(y, y_test, train_dataset, test_dataset, max_iters, gamma, dataset_name):
     start_time = datetime.datetime.now()
-    logistic_regression_loss, logistic_regression_w = logistic_regression(np.array([y]).T, train_dataset, gamma, max_iters)
+    initial_w = np.zeros((train_dataset.shape[1],1))
+    logistic_regression_w, logistic_regression_loss = logistic_regression(np.array([y]).T, train_dataset, initial_w, max_iters, gamma)
 
-    # Print result
-    logistic_regression_loss = compute_rmse_loss(logistic_regression_loss)
-    test_mse = compute_loss(y_test, test_dataset, logistic_regression_w[:,0])
-    test_rmse = np.sqrt(2*test_mse)
+    test_rmse = compute_RMSE(y_test, test_dataset, logistic_regression_w[:,0])
 
     end_time = datetime.datetime.now()
     exection_time = (end_time - start_time).total_seconds()
@@ -58,13 +55,11 @@ def ridge_regression_dataset_lamdas_test(y, y_test, train_dataset, test_dataset,
     start_time = datetime.datetime.now()
     for lamb in np.nditer(lambdas):
 
-        ridge_regression_loss, ridge_regression_gradient_w = ridge_regression(y, train_dataset, lamb)
+        ridge_regression_gradient_w, ridge_regression_loss = ridge_regression(y, train_dataset, lamb)
 
-        ridge_regression_loss = compute_rmse_loss(ridge_regression_loss)
         train_losses = np.append(train_losses, ridge_regression_loss)
 
-        test_mse = compute_loss(y_test, test_dataset, ridge_regression_gradient_w)
-        test_rmse = np.sqrt(2*test_mse)
+        test_rmse = compute_RMSE(y_test, test_dataset, ridge_regression_gradient_w)
         test_losses = np.append(test_losses, test_rmse)
 
     end_time = datetime.datetime.now()
@@ -87,13 +82,10 @@ def least_squares_GD_gammas_test(y, y_test, train_dataset, test_dataset, gammas,
     start_time = datetime.datetime.now()
     for gamma in np.nditer(gammas):
         # Start gradient descent.
-        grad_loss, gradient_w = least_squares_GD(y, train_dataset, gamma, max_iters)
+        initial_w = np.zeros(train_dataset.shape[1])
+        gradient_w, train_rmse = least_squares_GD(y, train_dataset, initial_w, max_iters, gamma)
 
-        # Print result
-        train_rmse = compute_rmse_loss(grad_loss)
-        test_mse = compute_loss(y_test, test_dataset, gradient_w)
-        test_rmse = np.sqrt(2*test_mse)
-
+        test_rmse = compute_RMSE(y_test, test_dataset, gradient_w)
         train_losses = np.append(train_losses, train_rmse)
         test_losses = np.append(test_losses, test_rmse)
 

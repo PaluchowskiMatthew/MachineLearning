@@ -26,16 +26,6 @@ def compute_loss(y, tx, w):
 def compute_rmse_loss(mse_loss):
     return np.sqrt(2*mse_loss)
 
-def compute_MSE(y, tx, w):
-    """Calculate the loss.
-
-    You can calculate the loss using mse or mae.
-    """
-    normalization = 1/(2*y.shape[0])
-    yy = np.array([y]).T
-
-    MSE = normalization * np.sum(np.power( yy - np.dot(tx, w), 2))
-    return MSE
 
 def calculate_loss_by_likelyhood(y, tx, w):
     """compute the cost by negative log likelihood.
@@ -43,3 +33,9 @@ def calculate_loss_by_likelyhood(y, tx, w):
     # ***************************************************
     loss = np.sum(np.log(1+np.exp(np.dot(tx,w))) - np.dot(y.T, np.dot(tx, w)))
     return loss
+
+def compute_RMSE(y, tx, w):
+    e = y - np.dot(tx, w)
+    mse = calculate_mse(e)
+    rmse = np.sqrt(2*mse)
+    return rmse
