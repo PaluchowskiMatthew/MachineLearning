@@ -10,9 +10,9 @@ def logistic_regression_dataset_gammas_test(y, y_test, train_dataset, test_datas
     train_losses = []
     test_losses = []
     weights = np.empty((0, train_dataset.shape[1]), float)
+    start_time = datetime.datetime.now()
     for gamma in np.nditer(gammas):
 
-        start_time = datetime.datetime.now()
         logistic_regression_loss, logistic_regression_w = logistic_regression(np.array([y]).T, train_dataset, gamma, max_iters)
 
         # Print result
@@ -22,11 +22,10 @@ def logistic_regression_dataset_gammas_test(y, y_test, train_dataset, test_datas
         test_rmse = np.sqrt(2*test_mse)
         test_losses = np.append(test_losses, test_rmse)
 
-        end_time = datetime.datetime.now()
-        exection_time = (end_time - start_time).total_seconds()
-
         weights = np.vstack((weights, logistic_regression_w.T))
-        print("Logistic Regression for {dn}: execution time={t:.3f} seconds. Test RMSE Loss={l}, Train RMSE Loss={tl}".format(dn = dataset_name, t=exection_time, l=test_rmse, tl=logistic_regression_loss))
+    end_time = datetime.datetime.now()
+    exection_time = (end_time - start_time).total_seconds()
+    print("Logistic Regression for {dn}: execution time={t:.3f} seconds.".format(dn = dataset_name, t=exection_time))
 
     plt.figure(figure_id)
     plt.semilogx(gammas, test_losses, marker=".", color='r', label='test error')
@@ -50,7 +49,7 @@ def logistic_regression_dataset_single_gamma_test(y, y_test, train_dataset, test
     end_time = datetime.datetime.now()
     exection_time = (end_time - start_time).total_seconds()
 
-    print("Logistic Regression for {dn}: execution time={t:.3f} seconds. Train RMSE Loss={l} Test RMSE LOSS={tsl}".format(dn = dataset_name, t=exection_time, l=logistic_regression_loss, tsl=test_rmse))
+    print("Logistic Regression for {dn}: execution time={t:.3f} seconds.".format(dn = dataset_name, t=exection_time))
     return logistic_regression_loss, test_rmse, logistic_regression_w[:,0]
 
 def ridge_regression_dataset_lamdas_test(y, y_test, train_dataset, test_dataset, lambdas, dataset_name, figure_id):
@@ -70,7 +69,7 @@ def ridge_regression_dataset_lamdas_test(y, y_test, train_dataset, test_dataset,
 
     end_time = datetime.datetime.now()
     exection_time = (end_time - start_time).total_seconds()
-    print("Ridge Regression for {dn}: execution time={t:.3f} seconds. Test RMSE Loss={l}, Train RMSE Loss={tl}".format(dn = dataset_name, t=exection_time, l=test_rmse, tl=ridge_regression_loss))
+    print("Ridge Regression for {dn}: execution time={t:.3f} seconds.".format(dn = dataset_name, t=exection_time, l=test_rmse, tl=ridge_regression_loss))
 
     plt.figure(figure_id)
     plt.semilogx(lambdas, train_losses, marker=".", color='b', label='Train')
@@ -80,3 +79,34 @@ def ridge_regression_dataset_lamdas_test(y, y_test, train_dataset, test_dataset,
     plt.ylabel("rmse")
     plt.grid(True)
     plt.legend()
+
+def least_squares_GD_gammas_test(y, y_test, train_dataset, test_dataset, gammas, max_iters, dataset_name, figure_id):
+    train_losses = []
+    test_losses = []
+
+    start_time = datetime.datetime.now()
+    for gamma in np.nditer(gammas):
+        # Start gradient descent.
+        grad_loss, gradient_w = least_squares_GD(y, train_dataset, gamma, max_iters)
+
+        # Print result
+        train_rmse = compute_rmse_loss(grad_loss)
+        test_mse = compute_loss(y_test, test_dataset, gradient_w)
+        test_rmse = np.sqrt(2*test_mse)
+
+        train_losses = np.append(train_losses, train_rmse)
+        test_losses = np.append(test_losses, test_rmse)
+
+    end_time = datetime.datetime.now()
+    exection_time = (end_time - start_time).total_seconds()
+    print("Gradient Descent for {dn}: execution time={t:.3f} seconds. Train RMSE Loss={l}, Test RMSE Loss={tl}".format(dn = dataset_name, t=exection_time, l=train_rmse, tl=test_rmse))
+    plt.figure(figure_id)
+    plt.semilogx(gammas, train_losses, marker=".", color='b', label='Train')
+    plt.semilogx(gammas, test_losses, marker=".", color='r', label='Test')
+    plt.title(dataset_name)
+    plt.xlabel("gamma")
+    plt.ylabel("rmse")
+    plt.grid(True)
+    plt.legend()
+
+    return train_losses, test_losses
