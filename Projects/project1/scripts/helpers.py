@@ -37,3 +37,14 @@ def split_data(x, y, ratio, seed=1):
     y_test = y[indices[int(ratio*size) :]]
 
     return x_train, x_test, y_train, y_test
+
+##
+#   Function used for feature combinations
+##
+import itertools
+def combinations(array2d, indeces_list_a, indeces_list_b):
+    combinations = list(itertools.product(indeces_list_a, indeces_list_b))
+    for comb in combinations:
+        new_feature = np.array([array2d[:,comb[0]] * array2d[:,comb[1]]]).T
+        array2d = np.hstack((array2d, new_feature))
+    return array2d
