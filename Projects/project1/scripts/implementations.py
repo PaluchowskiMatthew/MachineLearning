@@ -358,7 +358,7 @@ def cross_validation_LS(y, x, k_fold, seed):
         #tx_train, x_tr_mean, x_tr_std = standardize(x_train)
         #tx_test, x_te_mean, x_te_std = standardize(x_test)
 
-        w, loss = ridge_regression(y_train, tx_train)
+        w, loss = least_squares(y_train, tx_train)
         test_mse = compute_loss(y_test, tx_test, w)
         train_mse = compute_loss(y_train, tx_train, w)
         rmse_tr.append(np.sqrt(2*train_mse))
@@ -380,10 +380,10 @@ def cross_validation_ridge(y, x, lamb, k_fold, seed):
         x_train = np.delete(x, k_indices[fold, :], axis=0)
         y_train = np.delete(y, k_indices[fold, :], axis=0)       
 
-        tx_train, m, s = standardize(x_train)
-        tx_test, m, s = standardize(x_test)
-        #tx_train = np.c_[np.ones((y_train.shape[0], 1)), x_train]
-        #tx_test = np.c_[np.ones((y_test.shape[0], 1)), x_test]
+        #tx_train, m, s = standardize(x_train)
+        #tx_test, m, s = standardize(x_test)
+        tx_train = np.c_[np.ones((y_train.shape[0], 1)), x_train]
+        tx_test = np.c_[np.ones((y_test.shape[0], 1)), x_test]
 
         w_rid, rmse_rid = ridge_regression(y_train, tx_train, lamb)
         y_pred_rid = predict_labels(w_rid, tx_test)
