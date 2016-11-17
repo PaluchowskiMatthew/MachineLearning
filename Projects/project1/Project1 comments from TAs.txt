@@ -1,0 +1,34 @@
+ML Paper Writing: Best practice
+
+results should show actual accuracy obtained!
+comparison of methods in terms of cost function was bollocks - accuracy is everything
+
+do not tell everything you tried, only the most relevant. show result even proving that it is worse.
+dont tell that you tried sth but it didn't work - its just as if you didn't do it
+
+
+Test data is supposed to be normalized the same way as train!!!!!!!
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+Normalization of test data = (test data  - mean_of_TRAIN_data) / standard_deviation_of_TRAIN_data
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+in practical case what you should do is:
+take features -> calculate polynomial features -> normalize
+
+or
+
+take features -> normalize -> calculate polynomial features -> normalize
+
+
+
+CROSS-VALIDATION
+mean AND standard deviation! (boxplot)
+
+
+Error measure gotta make sense!
+pure accuracy was not a good error measure because you could set all y to 0 and get 90% accuracy!
+better would be to calculate false possitive/false negative accuracy rate 'how health your model is'
+
+IF Run.py runs too long just save weights in file
+
+MODULARIZE CODE
