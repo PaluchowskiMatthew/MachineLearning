@@ -1,11 +1,11 @@
-#Project 2 - Road Segmentation
+# Project 2 - Road Segmentation
 
 Marie Drieghe, Lazare Girardin, Mateusz Paluchowski @ EPFL 2016
 
-##### Table of Contents  
-[Abstract](#Abstract)  
-[Data](#Data)  
-[Feasibility & Constrains](#Feasibility) 
+### Table of Contents  
+[Abstract](#Abstract)
+[Data](#Data)
+[Feasibility & Constraints](#Feasibility) 
 [Deliverables](#Deliverables)  
 [Timeplan](#Timeplan) 
 
@@ -29,21 +29,17 @@ Example code here also provides helper functions to visualize the images, labels
 
 <a name="Deliverables"/>
 ## Deliverables
-Keggle: The best the score, the higher the grade!
-Report: Your 4 page report as .pdf
-• Code: The complete executable and documented Python code, as one .zip file.
+### Kaggle
+  The better the score, the higher the grade!
+### Report 
+  Your 4 page report as .pdf
+### Code
+  The complete executable and documented Python code, as one .zip file.
 Rules for the code part:
-– Reproducibility: In your submission, you must provide a script run.py which produces exactly the same
-.csv predictions which you used in your best submission to the competition on Kaggle. This includes
-a clear ReadMe file explaining how to reproduce your setup, including precise training, prediction and
-installation instructions if additional libraries are used - the same way as if you would ideally instruct
-a new teammate to start working with your code.
-– Documentation: Your ML system must be clearly described in your PDF report and also welldocumented
-in the code itself. A clear ReadMe file must be provided. The documentation must
-also include all data preparation, feature generation as well as cross-validation steps that you have
-used.
-– External ML libraries are allowed, as long as accurately cited and documented.
-– External datasets are allowed, as long as accurately cited and documented.
+- Reproducibility: In your submission, you must provide a script run.py which produces exactly the same .csv predictions which you used in your best submission to the competition on Kaggle. This includes a clear ReadMe file explaining how to reproduce your setup, including precise training, prediction and installation instructions if additional libraries are used - the same way as if you would ideally instruct a new teammate to start working with your code.
+- Documentation: Your ML system must be clearly described in your PDF report and also well documented in the code itself. A clear ReadMe file must be provided. The documentation must also include all data preparation, feature generation as well as cross-validation steps that you have used.
+- External ML libraries are allowed, as long as accurately cited and documented.
+- External datasets are allowed, as long as accurately cited and documented.
 
 <a name="Timeplan"/>
 ## Timeplan
