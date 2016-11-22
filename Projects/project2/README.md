@@ -7,7 +7,8 @@ Marie Drieghe, Lazare Girardin, Mateusz Paluchowski @ EPFL 2016
 [Data](#Data)    
 [Feasibility & Constraints](#Feasibility)     
 [Deliverables](#Deliverables)      
-[Timeplan](#Timeplan)     
+[Timeplan](#Timeplan)  
+[Libraries and Frameworks](#Frameworks)    
 
 <a name="Abstract"/>
 ## Abstract
@@ -48,3 +49,12 @@ Rules for the code part:
 - Feature engineering
 - Choosing the most promising method 
 - **Deadline** Dec 22, 2016
+
+<a name="Frameworks"/>
+## Libraries and Frameworks
+- NumPy
+- (?) Pandas for feature engineering
+- (?) [OpenCV](http://opencv.org/)
+- (?) [Chainer](http://chainer.org/)
+- (?) [TensorFlow](https://www.tensorflow.org/)
+- [tqdm](https://github.com/noamraph/tqdm) - for-loop progress bar 
