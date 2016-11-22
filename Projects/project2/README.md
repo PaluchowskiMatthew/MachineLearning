@@ -43,3 +43,8 @@ Rules for the code part:
 
 <a name="Timeplan"/>
 ## Timeplan
+- *Nov 29, 2016* Do a reaserch on state-of-the-art methods and approaches. Highlight most important findiings.
+- Performance measurments agains baseline model (Sketch jupyter notebook by *Nov 24, 2016*)
+- Feature engineering
+- Choosing the most promising method 
+- **Deadline** Dec 22, 2016
