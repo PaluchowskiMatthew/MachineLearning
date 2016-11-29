@@ -140,3 +140,31 @@ def display_prediction(original_image, patch_size, prediction):
     new_img = make_img_overlay(original_image, predicted_im)
 
     plt.imshow(new_img)
+
+def display_prediction_alt(original_image, gt_image, patch_size, prediction):
+    #Display prediction as an image on top of original one
+    w = original_image.shape[0]
+    h = original_image.shape[1]
+    predicted_im = label_to_img(w, h, patch_size, patch_size, prediction)
+
+    new_img = make_img_overlay(original_image, predicted_im)
+
+    nChannels = len(gt_image.shape)
+    w = gt_image.shape[0]
+    h = gt_image.shape[1]
+    if nChannels != 3:
+        gt_img_3c = np.zeros((w, h, 3), dtype=np.uint8)
+        gt_img8 = img_float_to_uint8(gt_image)
+        gt_img_3c[:,:,0] = gt_img8
+        gt_img_3c[:,:,1] = gt_img8
+        gt_img_3c[:,:,2] = gt_img8
+
+        gt_image = gt_img_3c
+
+    new_gt = make_img_overlay(gt_image, predicted_im)
+
+    f, ((ax1, ax2), (ax3, ax4)) = plt.subplots(2, 2, figsize=(10,10))
+    ax1.imshow(original_image)
+    ax2.imshow(gt_image)
+    ax3.imshow(new_img)
+    ax4.imshow(new_gt)
