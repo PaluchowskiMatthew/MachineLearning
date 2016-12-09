@@ -12,7 +12,7 @@ from keras import backend as K
 from image_handling import *
 
 NUMBER_IMGS = 100
-TRAIN_RATIO = 0.7
+TRAIN_RATIO = 0.9
 IMG_PATCH_SIZE = 8
 NUM_CHANNELS = 3
 
@@ -20,14 +20,12 @@ batch_size = 128
 nb_classes = 2
 nb_epoch = 12
 
-# input image dimensions
-img_rows, img_cols = 28, 28
 # number of convolutional filters to use
-nb_filters = 32
+nb_filters = 64
 # size of pooling area for max pooling
 pool_size = (2, 2)
 # convolution kernel size
-kernel_size = (5, 5)
+kernel_size = (3, 3)
 
 input_shape = (IMG_PATCH_SIZE, IMG_PATCH_SIZE, NUM_CHANNELS)
 
@@ -65,12 +63,21 @@ def main():
 	model.add(Convolution2D(nb_filters, kernel_size[0], kernel_size[1]))
 	model.add(Activation('relu'))
 
+	# add border_mode to layers?
+
+	# Second convolution
+	model.add(Convolution2D(nb_filters, kernel_size[0], kernel_size[1]))
+	model.add(Activation('relu'))
+
 	# Pooling and dropout
 	model.add(MaxPooling2D(pool_size=pool_size))
 	model.add(Dropout(0.25))
 
 	# Full-connected layer
 	model.add(Flatten())
+	model.add(Dense(512))
+	model.add(Activation('relu'))
+
 	model.add(Dense(512))
 	model.add(Activation('relu'))
 
@@ -87,6 +94,16 @@ def main():
 
 	model.fit(X_train, Y_train, batch_size=batch_size, nb_epoch=nb_epoch,
           	   verbose=1, validation_data=(X_test, Y_test))
+
+	"""
+	# Let's train the model using SGD + momentum:
+	sgd = SGD(lr=0.01, decay=1e-6, momentum=0.9, nesterov=True)
+	model.compile(loss='categorical_crossentropy',
+    	          optimizer=sgd,
+        	      metrics=['accuracy'])
+
+
+	"""
 
 	score = model.evaluate(X_test, Y_test, verbose=0)
 	print('Test score:', score[0])
