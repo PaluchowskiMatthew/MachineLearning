@@ -11,9 +11,9 @@ from keras import backend as K
 
 from image_handling import *
 
-NUMBER_IMGS = 20
-TRAIN_RATIO = 0.4
-IMG_PATCH_SIZE = 16
+NUMBER_IMGS = 100
+TRAIN_RATIO = 0.7
+IMG_PATCH_SIZE = 8
 NUM_CHANNELS = 3
 
 batch_size = 128
@@ -27,7 +27,7 @@ nb_filters = 32
 # size of pooling area for max pooling
 pool_size = (2, 2)
 # convolution kernel size
-kernel_size = (3, 3)
+kernel_size = (5, 5)
 
 input_shape = (IMG_PATCH_SIZE, IMG_PATCH_SIZE, NUM_CHANNELS)
 
@@ -71,7 +71,7 @@ def main():
 
 	# Full-connected layer
 	model.add(Flatten())
-	model.add(Dense(128))
+	model.add(Dense(512))
 	model.add(Activation('relu'))
 
 	# Dropout to avoid overfitting
