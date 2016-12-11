@@ -7,13 +7,15 @@ from keras.models import Sequential
 from keras.layers import Dense, Dropout, Activation, Flatten
 from keras.layers import Convolution2D, MaxPooling2D
 from keras.utils import np_utils
+from keras.models import load_model
+from keras.optimizers import SGD
 from keras import backend as K
 
 from image_handling import *
 
 NUMBER_IMGS = 100
 TRAIN_RATIO = 0.9
-IMG_PATCH_SIZE = 8
+IMG_PATCH_SIZE = 16
 NUM_CHANNELS = 3
 
 batch_size = 128
@@ -25,11 +27,11 @@ nb_filters = 64
 # size of pooling area for max pooling
 pool_size = (2, 2)
 # convolution kernel size
-kernel_size = (3, 3)
+kernel_size = (8, 8)
 
 input_shape = (IMG_PATCH_SIZE, IMG_PATCH_SIZE, NUM_CHANNELS)
 
-def main():
+def train_cnn():
 
 	# ***************** HANDLE THE DATA **********************************
 	data_dir = 'training/'
@@ -50,6 +52,38 @@ def main():
 	X_test = data[idx[train_size:]]
 	Y_test = labels[idx[train_size:]]
 
+	"""
+	c0 = 0
+	c1 = 0
+	for i in range(len(Y_train)):
+		if Y_train[i][0] == 1:
+			c0 = c0 + 1
+		else:
+			c1 = c1 + 1
+	print ('Number of data points per class: c0 = ' + str(c0) + ' c1 = ' + str(c1))
+
+	print ('Balancing training data...')
+	min_c = min(c0, c1)
+	idx0 = [i for i, j in enumerate(Y_train) if j[0] == 1]
+	idx1 = [i for i, j in enumerate(Y_train) if j[1] == 1]
+	new_indices = idx0[0:min_c] + idx1[0:min_c]
+	print (len(new_indices))
+	print (Y_train.shape)
+	X_train = X_train[new_indices,:,:,:]
+	Y_train = Y_train[new_indices]
+
+	train_size = Y_train.shape[0]
+
+	c0 = 0
+	c1 = 0
+	for i in range(len(Y_train)):
+		if Y_train[i][0] == 1:
+			c0 = c0 + 1
+		else:
+			c1 = c1 + 1
+	print ('Number of data points per class: c0 = ' + str(c0) + ' c1 = ' + str(c1))
+
+	"""
 	# **************** DEFINE THE MODEL ARCHITECTURE *******************
 	model = Sequential()
 
@@ -88,23 +122,45 @@ def main():
 	model.add(Dense(nb_classes))
 	model.add(Activation('softmax'))
 
-	model.compile(loss='categorical_crossentropy',
-	          optimizer='adadelta',
-	          metrics=['accuracy'])
+	model.compile(loss='binary_crossentropy',
+			  optimizer='adadelta',
+			  metrics=['fmeasure'])
 
-	model.fit(X_train, Y_train, batch_size=batch_size, nb_epoch=nb_epoch,
-          	   verbose=1, validation_data=(X_test, Y_test))
+	#sgd = SGD(lr=0.01, decay=1e-6, momentum=0.9, nesterov=True)
+	#model.compile(loss='binary_crossentropy',
+	#			  optimizer=sgd,
+	#			  metrics=['fmeasure'])
 
-	"""
-	# Let's train the model using SGD + momentum:
-	sgd = SGD(lr=0.01, decay=1e-6, momentum=0.9, nesterov=True)
-	model.compile(loss='categorical_crossentropy',
-    	          optimizer=sgd,
-        	      metrics=['accuracy'])
+	#class_weight = auto??
+	model.fit(X_train, Y_train, batch_size=batch_size, nb_epoch=nb_epoch, 
+			  class_weight='auto', verbose=1, validation_data=(X_test, Y_test))
 
-
-	"""
 
 	score = model.evaluate(X_test, Y_test, verbose=0)
 	print('Test score:', score[0])
 	print('Test accuracy:', score[1])
+
+	data_dir = 'test_set_images/'
+	pred_dir = 'predictions/'
+	for i in range(1, 51):
+		imageid = "test_%.1d" % i
+		image_filename = data_dir + imageid + ".png"
+		if os.path.isfile(image_filename):
+			print ('Predicting' + image_filename)
+			img = mpimg.imread(image_filename)
+
+			data = np.asarray(img_crop(img, IMG_PATCH_SIZE, IMG_PATCH_SIZE))
+
+			predictions_patch = model.predict_classes(data, verbose=1)
+
+			img_prediction = label_to_img(img.shape[0], img.shape[1], 
+										  IMG_PATCH_SIZE, IMG_PATCH_SIZE, 
+										  predictions_patch)
+
+			pimg = Image.fromarray(img_prediction*255.0).astype(np.uint8)
+			pimg.save(pred_dir + "prediction_" + str(i) + ".png")
+
+		else:
+			print ('File ' + image_filename + ' does not exist')
+
+	model.save('models/cnn.h5')

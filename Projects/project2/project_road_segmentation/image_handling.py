@@ -76,3 +76,17 @@ def extract_labels(filename, num_images, IMG_PATCH_SIZE):
 
     # Convert to dense 1-hot representation.
     return labels.astype(np.float32)
+
+# Convert array of labels to an image
+def label_to_img(imgwidth, imgheight, w, h, labels):
+    array_labels = np.zeros([imgwidth, imgheight])
+    idx = 0
+    for i in range(0,imgheight,h):
+        for j in range(0,imgwidth,w):
+            if labels[idx] > 0.5:
+                l = 1
+            else:
+                l = 0
+            array_labels[j:j+w, i:i+h] = l
+            idx = idx + 1
+    return array_labels
