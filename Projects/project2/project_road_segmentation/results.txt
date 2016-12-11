@@ -1,0 +1,74 @@
+ON 10 images, 12 epochs: 
+
+SUMMARY OF RESULTS (RULE OF THUMBS):
+*** PARAM:
+- batch: smaller -> longer to compute, better results. Too small: overfits!
+- 8 patches yield better results
+- number of filters ~no change (64 is good, 96 doesn't change)
+- kernel size: 3x3 seems app. best
+- pool size: no change from 2x2 from 4x4
+*** ARCHITECT.
+- dense layer size: slightly better results (1024->0.843, 384->0.82)
+
+1st EXP:
+PATCH 16
+64 filters, size 5x5
+pool 2x2
+ 3x Conv->maxPooling->dropout->2xfull512->droupout->full_sofmax
+
+ f1: 0.79
+
+************ PARAM CHANGES
+ 2st EXP:
+PATCH 8
+64 filters, size 3x3
+pool 2x2
+3x Conv->maxPooling->dropout->2xfull512->droupout->full_sofmax
+ f1: 0.84
+
+  3rd EXP:
+PATCH 16
+64 filters, size 3x3
+pool 2x2
+3x Conv->maxPooling->dropout->2xfull512->droupout->full_sofmax
+ f1: 0.78
+
+  4th EXP:
+PATCH 8
+64 filters, size 4x4
+pool 2x2
+3x Conv->maxPooling->dropout->2xfull512->droupout->full_sofmax
+ f1: 0.836
+
+  5th EXP:
+PATCH 8
+96 filters, size 3x3
+pool 2x2
+3x Conv->maxPooling->dropout->2xfull512->droupout->full_sofmax
+ f1: 0.839
+
+ 6st EXP:
+PATCH 8
+64 filters, size 3x3
+pool 4x4
+3x Conv->maxPooling->dropout->2xfull512->droupout->full_sofmax
+ f1: 0.839
+
+*********** ARCHITECT. CHANGES:
+
+ 7th EXP:
+PATCH 8
+64 filters, size 3x3
+pool 2x2
+3x Conv->maxPooling->dropout->2xfull1024->droupout->full_sofmax
+ f1: 0.843
+
+  8th EXP:
+PATCH 8
+64 filters, size 3x3
+pool 2x2
+3x Conv->maxPooling->dropout->3xfull1024->droupout->full_sofmax
+ f1: 0.8359
+
+
+

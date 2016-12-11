@@ -14,24 +14,29 @@ from keras import backend as K
 from image_handling import *
 
 NUMBER_IMGS = 100
-TRAIN_RATIO = 0.9
-IMG_PATCH_SIZE = 16
+TRAIN_RATIO = 0.8
 NUM_CHANNELS = 3
 
 batch_size = 128
 nb_classes = 2
-nb_epoch = 12
 
+
+# ********** Tuning parameters: (See Network architecture as well)
+
+# size of patch of an image to be used as input and output of the neural net
+IMG_PATCH_SIZE = 8
+# Epochs to be trained
+nb_epoch = 20
 # number of convolutional filters to use
 nb_filters = 64
 # size of pooling area for max pooling
 pool_size = (2, 2)
 # convolution kernel size
-kernel_size = (8, 8)
+kernel_size = (4, 3)
 
 input_shape = (IMG_PATCH_SIZE, IMG_PATCH_SIZE, NUM_CHANNELS)
 
-def train_cnn():
+def train_cnn(model_name='dummy.h5'):
 
 	# ***************** HANDLE THE DATA **********************************
 	data_dir = 'training/'
@@ -53,6 +58,7 @@ def train_cnn():
 	Y_test = labels[idx[train_size:]]
 
 	"""
+	# Balancing the class VS. class_weight during traing?
 	c0 = 0
 	c1 = 0
 	for i in range(len(Y_train)):
@@ -85,6 +91,7 @@ def train_cnn():
 
 	"""
 	# **************** DEFINE THE MODEL ARCHITECTURE *******************
+
 	model = Sequential()
 
 	# Convolution layer with rectified linear activation
@@ -94,13 +101,13 @@ def train_cnn():
 	model.add(Activation('relu'))
 
 	# Second convolution
-	model.add(Convolution2D(nb_filters, kernel_size[0], kernel_size[1]))
+	model.add(Convolution2D(nb_filters, kernel_size[1], kernel_size[0]))
 	model.add(Activation('relu'))
 
-	# add border_mode to layers?
+	model.add(Dropout(0.25))
 
-	# Second convolution
-	model.add(Convolution2D(nb_filters, kernel_size[0], kernel_size[1]))
+	# Third convolution
+	model.add(Convolution2D(nb_filters, kernel_size[0], kernel_size[0]))
 	model.add(Activation('relu'))
 
 	# Pooling and dropout
@@ -109,10 +116,16 @@ def train_cnn():
 
 	# Full-connected layer
 	model.add(Flatten())
-	model.add(Dense(512))
+	model.add(Dense(1024))
 	model.add(Activation('relu'))
 
-	model.add(Dense(512))
+	model.add(Dense(1024))
+	model.add(Activation('relu'))
+
+	# Dropout to avoid overfitting
+	model.add(Dropout(0.25))
+
+	model.add(Dense(1024))
 	model.add(Activation('relu'))
 
 	# Dropout to avoid overfitting
@@ -140,6 +153,9 @@ def train_cnn():
 	print('Test score:', score[0])
 	print('Test accuracy:', score[1])
 
+	model.save('models/' + model_name)
+
+	"""
 	data_dir = 'test_set_images/'
 	pred_dir = 'predictions/'
 	for i in range(1, 51):
@@ -157,10 +173,9 @@ def train_cnn():
 										  IMG_PATCH_SIZE, IMG_PATCH_SIZE, 
 										  predictions_patch)
 
-			pimg = Image.fromarray(img_prediction*255.0).astype(np.uint8)
+			pimg = Image.fromarray((img_prediction*255.0).astype(np.uint8))
 			pimg.save(pred_dir + "prediction_" + str(i) + ".png")
 
 		else:
 			print ('File ' + image_filename + ' does not exist')
-
-	model.save('models/cnn.h5')
+	"""

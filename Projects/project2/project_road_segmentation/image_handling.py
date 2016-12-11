@@ -84,9 +84,9 @@ def label_to_img(imgwidth, imgheight, w, h, labels):
     for i in range(0,imgheight,h):
         for j in range(0,imgwidth,w):
             if labels[idx] > 0.5:
-                l = 1
-            else:
                 l = 0
+            else:
+                l = 1
             array_labels[j:j+w, i:i+h] = l
             idx = idx + 1
     return array_labels
