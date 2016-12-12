@@ -1,4 +1,5 @@
 import numpy as np
+from skimage import feature, color
 
 """
 Notation Cheatsheet:
@@ -33,6 +34,22 @@ def extract_features_2d(img):
     feat_m = np.mean(img)
     feat_v = np.var(img)
     feat = np.append(feat_m, feat_v)
+    return feat
+
+def extract_features_edge(img):
+    """(CUSTOM) Extract 7-dimensional features consisting of average RGB color as well as variance + canny edge detector
+
+    Args:
+        img (numpy array): Original image/patch
+
+    Returns:
+        [[[]]]: image/patch enhanced with features
+    """
+    feat_m = np.mean(img, axis=(0,1))
+    feat_v = np.var(img, axis=(0,1))
+    feat_e = np.asarray(feature.canny(color.rgb2gray(img), sigma=5, low_threshold=0, high_threshold=0.15).sum()).reshape(1,)
+    feat = np.append(feat_m, feat_v)
+    feat = np.hstack([feat, feat_e])
     return feat
 
 def value_to_class(v, threshold):

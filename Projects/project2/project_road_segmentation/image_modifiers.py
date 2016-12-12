@@ -145,7 +145,7 @@ def translate_img(img, h_range, w_range):
             translations.append(translated_img)
     return translations
 
-def img_crop(img, w, h, w_translation, h_translation):
+def img_crop_translate(img, w, h, w_translation, h_translation):
     """(MODIFIED) Image cropping functon with optional crop tranlation
 
     Args:
