@@ -4,7 +4,8 @@ import skimage as ski
 import sklearn as skl
 import matplotlib.pyplot as plt
 import os,sys
-from PIL import Image
+from PIL import Image, ImageOps
+import math
 
 
 def load_image(infilename):
@@ -33,6 +34,37 @@ def img_float_to_uint8(img):
     rimg = img - np.min(img)
     rimg = (rimg / np.max(rimg) * 255).round().astype(np.uint8)
     return rimg
+
+
+def rotate_imgs(imgs_array, angle_step, flip=False):
+    """Image rotating function
+
+    Args:
+        imgs_array (array): Array of images (3D numpy arrays).
+        angle_step (double): step of rotation angle
+        flip (bool): flag. If true fliped image will also be included
+
+    Returns:
+        array of 3D numpy arrays[ [[[]]] ]
+
+    """
+    number_of_rotations = math.floor(360 / angle_step)
+    rotated_imgs = []
+
+    for img in imgs_array:
+        for rotation_number in range(1, number_of_rotations):
+            is_2d = len(img.shape) < 3
+            if is_2d:
+                pil_img = Image.fromarray(img, 'L')
+            else:
+                pil_img = Image.fromarray(img, 'RGB')
+            rotated = pil_img.rotate(angle_step * rotation_number)
+            rotated_imgs.append(np.array(rotated))
+            if flip:
+                flipped = ImageOps.mirror(pil_img)
+                rotated = flipped.rotate(angle_step * rotation_number)
+                rotated_imgs.append(np.array(rotated))
+    return rotated_imgs
 
 # Concatenate an image and its groundtruth
 def concatenate_images(img, gt_img):
