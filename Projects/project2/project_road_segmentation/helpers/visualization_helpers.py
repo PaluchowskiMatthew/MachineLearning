@@ -1,6 +1,6 @@
 import numpy as np
 from PIL import Image
-from image_modifiers import img_float_to_uint8
+from helpers.image_modifiers import img_float_to_uint8
 
 """
 Notation Cheatsheet:
