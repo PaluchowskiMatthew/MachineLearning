@@ -109,7 +109,7 @@ def extract_patches(dataset, patch_size, patch_translation):
         patches.append(img_patches)
     return patches
 
-def compute_input_features(input_patches, func):
+def compute_input_features(input_patches, func, **kwargs):
     """(MODIFIED) Feature computing function for input patches
     Args:
         input_patches ([]): Array of input patches of images
@@ -125,10 +125,11 @@ def compute_input_features(input_patches, func):
         features.append(feature)
     return features
 
-def compute_output_features(output_patches, threshold):
+def compute_output_features(output_patches, func, threshold):
     """(MODIFIED) Feature computing function for input patches
     Args:
         output_patches ([]): Array of output patches of images
+        func (function): Function which should be used to compute fetures
         threshold (double): Threshold value for classification
     Returns:
         [train_gt_feature, test_gt_features]: A list of gt feautures of dataset
@@ -136,7 +137,7 @@ def compute_output_features(output_patches, threshold):
     features = []
     names = ['Train GT features: ', 'Test GT features: ']
     for i, patch in enumerate(output_patches):
-        feature = np.asarray([value_to_class(np.mean(patch[i]), threshold) for i in range(len(patch))])
+        feature = np.asarray([func(patch[i], threshold) for i in range(len(patch))])
         print(names[i] + '{0}'.format(len(feature)))
         features.append(feature)
     return features
