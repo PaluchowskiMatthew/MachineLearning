@@ -9,7 +9,6 @@ import os
 import sys
 import urllib
 import matplotlib.image as mpimg
-import matplotlib.pyplot as plt
 from PIL import Image
 import numpy as np
 
@@ -29,7 +28,7 @@ from keras.preprocessing.image import ImageDataGenerator
 def train_cnn(model_name='ec2_model.h5'):
     # GLOBAL VARIABLES
     ROOT_DIR = "training/"
-    TOTAL_IMAGES = 10 # Number of images to load
+    TOTAL_IMAGES = 100 # Number of images to load
     TRAIN_FRACTION = 0.8 # Percentage of images used for training
     ANGLE_STEP = False # Gotta be 90/ANGLE_STEP needs to be an integer
     FLIP = False # Flag to signal if flipped  versions of rotated images should also be created
@@ -48,7 +47,7 @@ def train_cnn(model_name='ec2_model.h5'):
     # ********** Tuning parameters: (See Network architecture as well)
 
     # Epochs to be trained
-    nb_epoch = 10
+    nb_epoch = 100
     # number of convolutional filters to use
     nb_filters = 64
     # size of pooling area for max pooling
@@ -161,9 +160,9 @@ def train_cnn(model_name='ec2_model.h5'):
     vertical_flip: Boolean. Randomly flip inputs vertically.
     rescale: rescaling factor. Defaults to None. If None or 0, no rescaling is applied, otherwise we multiply the data by the value provided (before applying any other transformation).    """
     train_datagen = ImageDataGenerator(
-                            samplewise_center=True,
-                            samplewise_std_normalization=True,
-                            zca_whitening=False,
+ #                           samplewise_center=True,
+ #                           samplewise_std_normalization=True,
+ #                           zca_whitening=False,
                             rotation_range=90,
                             shear_range=0.2,
                             width_shift_range=0.25,
@@ -171,20 +170,20 @@ def train_cnn(model_name='ec2_model.h5'):
                             horizontal_flip=True,
                             vertical_flip=True)
 
-    test_datagen = ImageDataGenerator(
-                            samplewise_center=True,
-                            samplewise_std_normalization=True,
-                            zca_whitening=False)
+#    test_datagen = ImageDataGenerator(
+#                            samplewise_center=True,
+#                            samplewise_std_normalization=True,
+#                            zca_whitening=False)
 
     # compute quantities required for featurewise normalization
     # (std, mean, and principal components if ZCA whitening is applied)
     train_datagen.fit(X_train)
-    test_datagen.fit(X_test)
+#    test_datagen.fit(X_test)
 
 
     # fits the model on batches with real-time data augmentation:
     model.fit_generator(train_datagen.flow(X_train, Y_train, batch_size=batch_size),
-                        samples_per_epoch=train_dataset_size, nb_epoch=nb_epoch, class_weight='auto', callbacks=callbacks_list, verbose=1, validation_data=(X_test, Y_test))
+                        samples_per_epoch=train_dataset_size*10, nb_epoch=nb_epoch, class_weight='auto', callbacks=callbacks_list, verbose=1, validation_data=(X_test, Y_test))
 
 #     model.fit_generator(X_train_small, Y_train_small, batch_size=batch_size, nb_epoch=nb_epoch, class_weight='auto', callbacks=callbacks_list, verbose=1, validation_data=(X_test, Y_test))
 

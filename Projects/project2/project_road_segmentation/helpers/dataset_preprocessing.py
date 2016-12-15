@@ -185,7 +185,7 @@ def extract_patches(dataset, patch_size, patch_translation):
     for i, imgs in enumerate(dataset):
         img_patches = [img_crop_translate(imgs[i], patch_size, patch_size, patch_translation, patch_translation) for i in range(len(imgs))]
         img_patches = np.asarray([img_patches[i][j] for i in range(len(img_patches)) for j in range(len(img_patches[i]))])
-        print(names[i] + '{0}'.format(len(img_patches)))
+        #print(names[i] + '{0}'.format(len(img_patches)))
         patches.append(img_patches)
     return patches
 
@@ -201,7 +201,7 @@ def compute_input_features(input_patches, func, **kwargs):
     names = ['Train features: ', 'Test features: ']
     for i, patch in enumerate(input_patches):
         feature = np.asarray([ func(patch[i]) for i in range(len(patch))])
-        print(names[i] + '{0}'.format(len(feature)))
+        #print(names[i] + '{0}'.format(len(feature)))
         features.append(feature)
     return features
 
@@ -218,6 +218,6 @@ def compute_output_features(output_patches, func, threshold):
     names = ['Train GT features: ', 'Test GT features: ']
     for i, patch in enumerate(output_patches):
         feature = np.asarray([func(patch[i], threshold) for i in range(len(patch))])
-        print(names[i] + '{0}'.format(len(feature)))
+        #print(names[i] + '{0}'.format(len(feature)))
         features.append(feature)
     return features
