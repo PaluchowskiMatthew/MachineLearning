@@ -3,6 +3,7 @@ import os,sys
 import numpy as np
 from helpers.image_modifiers import *
 from helpers.feature_extractors import *
+from IPython.core.debugger import Tracer
 """
 Notation Cheatsheet:
 (ORIGINAL) - function provided by TAs and used in unmodified form
@@ -52,6 +53,7 @@ def get_image_names(root_dir, dataset_size):
         print('No image files in directory {0} found!'.format(image_dir))
         return
     n = min(dataset_size, len(images_files))
+    images_files = images_files[:n]
     print('Original loaded dataset size: {0}'.format(str(n)))
 
 
@@ -63,6 +65,7 @@ def get_image_names(root_dir, dataset_size):
     if len(gt_files) <= 0:
         print('No image files in directory {0} found!'.format(gt_dir))
         return
+    gt_files = gt_files[:n]
     return images_files, gt_files
 
 
@@ -103,15 +106,21 @@ def create_dataset(root_dir, dataset_size, train_fraction, **kwargs):
     train_imgs = imgs[0:train_size]
     test_imgs = imgs[train_size:]
     print('Creating train dataset...')
-    imgs_rotated_flipped = rotate_imgs(train_imgs, rotation_angle, flip)
-    train_imgs += imgs_rotated_flipped
+
+    if rotation_angle:
+        train_imgs += rotate_imgs(train_imgs, rotation_angle)
+    if flip:
+        train_imgs += flip_imgs(train_imgs)
 
     gt_imgs = [img_float_to_uint8(load_image(gt_files[i])) for i in range(n)]
     train_gt_imgs = gt_imgs[0:train_size]
     test_gt_imgs = gt_imgs[train_size:]
     print('Creating test dataset...')
-    gt_imgs_rotated_flipped = rotate_imgs(train_gt_imgs, rotation_angle, flip)
-    train_gt_imgs += gt_imgs_rotated_flipped
+
+    if rotation_angle:
+        train_gt_imgs += rotate_imgs(train_gt_imgs, rotation_angle)
+    if flip:
+        train_gt_imgs += flip_imgs(train_gt_imgs)
 
     print('Created train dataset size: {0}'.format(len(train_imgs)))
     print('Created test dataset size: {0}'.format(len(test_imgs)))
@@ -172,6 +181,7 @@ def extract_patches(dataset, patch_size, patch_translation):
     """
     names = ['Train patches: ', 'Test patches: ', 'Train GT patches: ', 'Test GT patches: ']
     patches = []
+
     for i, imgs in enumerate(dataset):
         img_patches = [img_crop_translate(imgs[i], patch_size, patch_size, patch_translation, patch_translation) for i in range(len(imgs))]
         img_patches = np.asarray([img_patches[i][j] for i in range(len(img_patches)) for j in range(len(img_patches[i]))])

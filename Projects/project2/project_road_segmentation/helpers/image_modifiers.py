@@ -2,6 +2,7 @@ from PIL import Image, ImageOps
 import numpy as np
 import math
 
+
 """
 Notation Cheatsheet:
 (ORIGINAL) - function provided by TAs and used in unmodified form
@@ -23,7 +24,7 @@ def img_float_to_uint8(img):
     rimg = (rimg / np.max(rimg) * 255).round().astype(np.uint8)
     return rimg
 
-def rotate_imgs(imgs_array, angle_step, flip=False):
+def rotate_imgs(imgs_array, angle_step):
     """(CUSTOM) Image rotating function
 
     Args:
@@ -36,28 +37,10 @@ def rotate_imgs(imgs_array, angle_step, flip=False):
 
     """
     rotated_imgs = []
-
-    if angle_step:
-        number_of_rotations = math.floor(360 / angle_step)
-        print('Number of rotations: {0}'.format(number_of_rotations))
-        print('Flipping: {0}'.format(flip))
-    else:
-        print('Skipping rotation.')
-        if flip:
-            for img in imgs_array:
-                is_2d = len(img.shape) < 3
-                if is_2d:
-                    pil_img = Image.fromarray(img, 'L')
-                else:
-                    pil_img = Image.fromarray(img, 'RGB')
-                flipped = ImageOps.mirror(pil_img)
-                rotated_imgs.append(np.array(flipped))
-        else:
-            print('Skipping flip.')
-        return rotated_imgs
+    number_of_rotations = math.floor(90 / angle_step)
 
     for img in imgs_array:
-        for rotation_number in range(1, number_of_rotations):
+        for rotation_number in range(1, number_of_rotations+1):
             is_2d = len(img.shape) < 3
             if is_2d:
                 pil_img = Image.fromarray(img, 'L')
@@ -65,11 +48,30 @@ def rotate_imgs(imgs_array, angle_step, flip=False):
                 pil_img = Image.fromarray(img, 'RGB')
             rotated = pil_img.rotate(angle_step * rotation_number)
             rotated_imgs.append(np.array(rotated))
-            if flip:
-                flipped = ImageOps.mirror(pil_img)
-                rotated = flipped.rotate(angle_step * rotation_number)
-                rotated_imgs.append(np.array(rotated))
+
     return rotated_imgs
+
+def flip_imgs(imgs_array):
+    """(CUSTOM) Image mirroring function
+
+    Args:
+        imgs_array (array): Array of images (3D numpy arrays).
+
+    Returns:
+        [ [[[]]] ]: list of flipped Images as 3D numpy arrays (RGB)
+    """
+    flipped_imgs = []
+    for img in imgs_array:
+        is_2d = len(img.shape) < 3
+        if is_2d:
+            pil_img = Image.fromarray(img, 'L')
+        else:
+            pil_img = Image.fromarray(img, 'RGB')
+
+        flipped = ImageOps.mirror(pil_img)
+        flipped_imgs.append(np.array(flipped))
+    return flipped_imgs
+
 
 def img_crop(im, w, h):
     """(ORIGINAL) Crops image into n patches of h x w size
