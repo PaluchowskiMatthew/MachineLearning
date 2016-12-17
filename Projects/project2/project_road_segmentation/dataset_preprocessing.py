@@ -103,7 +103,7 @@ def extract_patches(dataset, patch_size, patch_translation):
     names = ['Train patches: ', 'Test patches: ', 'Train GT patches: ', 'Test GT patches: ']
     patches = []
     for i, imgs in enumerate(dataset):
-        img_patches = [img_crop(imgs[i], patch_size, patch_size, patch_translation, patch_translation) for i in range(len(imgs))]
+        img_patches = [img_crop_translate(imgs[i], patch_size, patch_size, patch_translation, patch_translation) for i in range(len(imgs))]
         img_patches = np.asarray([img_patches[i][j] for i in range(len(img_patches)) for j in range(len(img_patches[i]))])
         print(names[i] + '{0}'.format(len(img_patches)))
         patches.append(img_patches)

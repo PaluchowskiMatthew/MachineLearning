@@ -52,6 +52,23 @@ def extract_features_edge(img):
      feat = np.hstack([feat, feat_e])
      return feat
 
+def extract_features_cogrey(img):
+    feat_e = extract_features_edge(img)
+
+    cov = feature.greycomatrix(color.rgb2gray(img), [1], [0, np.pi/4, np.pi/2, 3*np.pi/4])
+
+    con = feature.greycoprops(cov, 'contrast')[0]
+    d = feature.greycoprops(cov, 'dissimilarity')[0]
+    h = feature.greycoprops(cov, 'homogeneity')[0]
+    e = feature.greycoprops(cov, 'energy')[0]
+    cor = feature.greycoprops(cov, 'correlation')[0]
+    a = feature.greycoprops(cov, 'ASM')[0]
+
+    feat = np.hstack([feat_e, con, cor, d, h, e, a])
+
+    return feat
+
+
 
 def value_to_class(v, threshold):
     """(ORIGINAL) Extract image/patch value to binary class of road(1)/non-road(0)
