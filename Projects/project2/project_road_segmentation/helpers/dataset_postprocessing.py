@@ -1,6 +1,6 @@
 import numpy as np
 from PIL import Image, ImageOps, ImageChops
-from image_modifiers import patch_range
+from helpers.image_modifiers import patch_range
 
 """
 Notation Cheatsheet:
