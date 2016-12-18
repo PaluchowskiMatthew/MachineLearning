@@ -29,6 +29,7 @@ def label_to_img(imgwidth, imgheight, w, h, labels):
             idx = idx + 1
     return im
 
+
 def make_img_overlay(img, predicted_img):
     """(ORIGINAL) Overlay prediction on top of image
     Args:

@@ -3,7 +3,10 @@ import os,sys
 import numpy as np
 from helpers.image_modifiers import *
 from helpers.feature_extractors import *
+from skimage import img_as_float
+
 from IPython.core.debugger import Tracer
+
 """
 Notation Cheatsheet:
 (ORIGINAL) - function provided by TAs and used in unmodified form
@@ -23,6 +26,21 @@ def load_image(infilename):
     """
     data = mpimg.imread(infilename)
     return data
+
+def load_image_pil(infilename):
+    """(ORIGINAL) Image loding function
+
+    Args:
+        infilename (str): Path of image file.
+
+    Returns:
+        [[[]]]: Image as 3D array (RGB)
+
+    """
+    pil_img = Image.open(infilename)
+    pil_img = pil_img.convert("RGB")
+    data = np.array(pil_img)
+    return img_as_float(data)
 
 def get_image_names(root_dir, dataset_size):
     """(MODIFIED) Root directory crawling to find all satelite images and ground truth.
@@ -98,9 +116,8 @@ def create_dataset(root_dir, dataset_size, train_fraction, **kwargs):
     flip = kwargs.get('flip', False)
 
     images_files, gt_files = get_image_names(root_dir, dataset_size)
-
     n = len(images_files)
-    imgs = [img_float_to_uint8(load_image(images_files[i])) for i in range(n)]
+    imgs = [img_float_to_uint8(load_image_pil(images_files[i])) for i in range(n)]
 
     train_size = int(n*train_fraction)
     train_imgs = imgs[0:train_size]
@@ -112,7 +129,7 @@ def create_dataset(root_dir, dataset_size, train_fraction, **kwargs):
     if flip:
         train_imgs += flip_imgs(train_imgs)
 
-    gt_imgs = [img_float_to_uint8(load_image(gt_files[i])) for i in range(n)]
+    gt_imgs = [img_float_to_uint8(load_image_pil(gt_files[i])) for i in range(n)]
     train_gt_imgs = gt_imgs[0:train_size]
     test_gt_imgs = gt_imgs[train_size:]
     print('Creating test dataset...')

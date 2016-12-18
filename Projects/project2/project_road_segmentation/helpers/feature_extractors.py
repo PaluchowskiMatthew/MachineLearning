@@ -1,6 +1,9 @@
 import numpy as np
 from skimage import feature, color
 
+from helpers.image_modifiers import img_crop_translate
+from IPython.core.debugger import Tracer
+
 """
 Notation Cheatsheet:
 (ORIGINAL) - function provided by TAs and used in unmodified form
@@ -100,3 +103,34 @@ def value_to_2d_class(v, threshold):
         return [1, 0] #              *****  category matrix
     else:
         return [0, 1]
+
+def img_to_label(img, w, h, func, threshold):
+    """(ORIGINAL) Convert array of labels to an image
+    Args:
+        img ([[[]]]): Image as 3D array (RGB)
+        w (int): width of patch
+        h (int): height of patch
+        funct (function): extraction function (value_to_class or value_to_2d_class)
+
+    Returns:
+        labels ([]): array of labels for patches
+    """
+    img_patches = img_crop_translate(img, w, h, 0, 0)
+    #img_patches = np.asarray([img_patches[i][j] for i in range(len(img_patches)) for j in range(len(img_patches[i]))])
+    labels = np.asarray([func(img_patches[i], threshold) for i in range(len(img_patches))])
+
+    return labels
+
+def patch_to_label(patch, threshold):
+    """(MODIFIED) assign a label to a patch
+    Args:
+        patch ([[[]]]): Image patch as 3D array (RGB)
+        threshold (float): classification threshold
+    Returns:
+        label (int): label for patch
+    """
+    df = np.mean(patch)
+    if df > threshold:
+        return 1
+    else:
+        return 0
