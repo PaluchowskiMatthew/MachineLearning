@@ -21,10 +21,10 @@ PATCH_INPUT = 10
 PATCH_UNIT = 8
 nb_class = 2
 
-PATCH_WINDOW = 11  # MUST BE ODD
+PATCH_WINDOW = 3  # MUST BE ODD
 
 batch_size = 50
-nb_epoch = 3
+nb_epoch = 12
 
 def new_process(model_name, train_range):
 
@@ -41,10 +41,9 @@ def new_process(model_name, train_range):
 
 	num_images = train_range[1]-train_range[0]+1
 	new_size = int(IMG_SIZE/PATCH_UNIT)
-	imgs = np.zeros((num_images, new_size, new_size, 1))
-	j=0
+	imgs = np.zeros((num_images, new_size, new_size))
 	#PREDICT THE IMAGES WITH THE FIRST MODEL
-	for i in range(train_range[0], train_range[1]+1):
+	for j,i in enumerate(range(train_range[0], train_range[1]+1)):
 		imageid = "satImage_%.3d" % i
 		image_filename = train_data_filename + imageid + ".png"
 		if os.path.isfile(image_filename):
@@ -62,63 +61,75 @@ def new_process(model_name, train_range):
 			plt.show()
 
 			print(img_prediction.shape)
-			pimg = Image.fromarray((np.reshape(predictions_patch, (new_size, new_size), order='F')*255.0).astype(np.uint8))
+			pimg = Image.fromarray((np.reshape(predictions_patch, (new_size, new_size), order='C')*255.0).astype(np.uint8))
 			plt.imshow(pimg, cmap='Greys_r')
 			plt.show()
-			"""	
+			"""
 
 			#import pdb;pdb.set_trace()
 			# Store the predictions in tensor with shape [image index, patch_index x, patch index y, value of prediction]
-			imgs[j, :, :, :] = np.reshape(predictions_patch, (new_size, new_size, 1), order='F')
-			j+1
+			imgs[j, :, :] = np.reshape(predictions_patch, (new_size, new_size), order='C')
 		else:
 			print ('File ' + image_filename + ' does not exist')
 
 	#GET GROUNDTRUTH
-	j=0
+
 	labels = np.zeros((num_images, new_size, new_size, nb_class))
-	ll = np.zeros((num_images, new_size*new_size, nb_class))
-	for i in range(train_range[0], train_range[1]+1):
+	#ll = np.zeros((num_images, new_size*new_size, nb_class))
+	for j, i in enumerate(range(train_range[0], train_range[1]+1)):
 		imageid = "satImage_%.3d" % i
 		image_filename = train_labels_filename + imageid + ".png"
 		if os.path.isfile(image_filename):
 			print ('Loading ' + image_filename)
 			img = mpimg.imread(image_filename)
 			img_patch = img_crop(img, PATCH_UNIT, PATCH_UNIT)
+			print(np.asarray(img_patch).shape)
 			img_lab = np.asarray([value_to_class(np.mean(np.asarray(img_patch[ii]))) for ii in range(len(img_patch))])
 			# Store labels in tensor with shape [image index, patch x, patch y , mean label of patch]
+			print(img_lab.shape)
 			labels[j, :, :, :] = np.reshape(img_lab, (new_size, new_size, nb_class))
-			ll[j, :, :] = np.asarray(img_lab)
-			j = j+1
+			"""
+			pimg = Image.fromarray((labels[j, :, :, 0]*255.0).astype(np.uint8))
+			plt.imshow(pimg, cmap='Greys_r')
+			plt.show()
+			"""
+			
+			#ll[j, :, :] = np.asarray(img_lab)
 		else:
 			print ('File ' + image_filename + ' does not exist')
 
+	print(labels.shape)
+	print(imgs.shape)
+
 	w = int((PATCH_WINDOW-1)/2)
 	size_tr = int(new_size - 2*w)
-	pred = np.zeros((num_images*(size_tr**2), PATCH_WINDOW, PATCH_WINDOW, 1))
+	pred = np.zeros((num_images*(size_tr**2), PATCH_WINDOW, PATCH_WINDOW))
 	Y = np.zeros((num_images*(size_tr**2), nb_class))
 	
 	# Slide the patch window through each image and assign to each patch the center label of groundtrhuth image
-	TP=0
-	FN=0
+	TP=0.
+	FN=0.
 	for im in range(num_images):
-		im_off = im*(size_tr**2) #Image offset
+		im_off = im*size_tr**2#im*((size_tr)**2) #Image offset
+		print("IM off")
+		print(im_off)
 		for x in range(w,size_tr+w):
 			x_off = size_tr*(x-w) # x-axis offset
 			for y in range(w, size_tr+w):
 				y_off = (y-w) # y-axis offset
-				pred[im_off+x_off+y_off, :, :, :] = imgs[im, (x-w):(x+w+1), (y-w):(y+w+1)] #data: square corresponding to PATcH_WINDOW labels predicted
+				pred[im_off+x_off+y_off, :, :] = imgs[im, (x-w):(x+w+1), (y-w):(y+w+1)] #data: square corresponding to PATcH_WINDOW labels predicted
 				Y[im_off+x_off+y_off, :] = labels[im, x, y, :] #labels: center pixel of groundtruth image
-				if (pred[im_off+x_off+y_off, 5, 5]==Y[im_off+x_off+y_off, 0]):
-					TP = TP+1
-				else:
-					FN = FN+1
 
-	print("Number of true: ")
-	print(TP)
-	print("Number of false: ")
-	print(FN)
-	import pdb;pdb.set_trace()
+	for ii in np.arange((num_images*size_tr**2)):
+		if pred[ii, 1, 1] == Y[ii, 0]:
+			TP = TP+1.
+		else:
+			FN = FN +1.
+	print("Acc: ")
+	print(TP/(TP+FN))
+	#import pdb;pdb.set_trace()
+
+	return
 
 	# ************* TRAIN AND TEST SETS *******
 	TRAIN_RATIO = 0.8

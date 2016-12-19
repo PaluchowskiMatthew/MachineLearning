@@ -21,7 +21,7 @@ def predict(model_name):
 	pred_dir = 'predictions/'
 
 	print("launch post")
-	new_process(model_name, [71, 81])
+	new_process(model_name, [1, 10])
 	return
 
 	model_path = 'models/' + model_name
