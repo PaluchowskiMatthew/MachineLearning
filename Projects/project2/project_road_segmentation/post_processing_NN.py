@@ -3,7 +3,7 @@ import numpy as np
 np.random.seed(1337)  # for reproducibility
 
 from keras.models import Sequential
-from keras.layers import Dense, Dropout, Activation, Flatten, Reshape
+from keras.layers import Dense, Dropout, Activation, Flatten, Reshape, SpatialDropout2D
 from keras.layers import Convolution2D, MaxPooling2D
 from keras.utils import np_utils
 from keras.models import load_model
@@ -20,7 +20,7 @@ PATCH_INPUT = 10
 PATCH_UNIT = 8
 nb_class = 2
 
-PATCH_WINDOW = 5  # MUST BE ODD
+PATCH_WINDOW = 11  # MUST BE ODD
 
 batch_size = 50
 nb_epoch = 12
@@ -50,7 +50,6 @@ def post_process(model_name, train_range):
 	print("Acc: ")
 	print(TP/(TP+FN))
 
-	return
 	# ************* TRAIN AND TEST SETS *******
 	TRAIN_RATIO = 0.7
 	idx = np.random.permutation(np.arange(pred.shape[0]))
@@ -64,9 +63,11 @@ def post_process(model_name, train_range):
 	input_shape = (PATCH_WINDOW, PATCH_WINDOW, 1)
 	model2 = Sequential()
 	# Convolution layer with rectified linear activation
-	model2.add(Convolution2D(64, 3,3, border_mode='same',
+	model2.add(Convolution2D(64, 5,5, border_mode='same',
 							input_shape=input_shape))
 	model2.add(Activation('relu'))
+
+	model2.add(SpatialDropout2D(0.1))
 
 	model2.add(Convolution2D(64, 3,3))
 	model2.add(Activation('relu'))
@@ -98,3 +99,17 @@ def post_process(model_name, train_range):
 	score = model2.evaluate(X_test, Y_test, verbose=0)
 	print('Test score:', score[0])
 	print('Test accuracy:', score[1])
+
+	model2.save('models/POST/post.h5')
+
+	try1 = extract_data_post(model_name, [3, 3], train_data_filename, PATCH_UNIT, PATCH_WINDOW)
+	
+	predictions_patch = model2.predict_classes(try1, verbose=1)
+
+	img_prediction = label_to_img(size_tr*PATCH_UNIT, size_tr*PATCH_UNIT, 
+										  PATCH_UNIT, PATCH_UNIT, 
+										  predictions_patch)
+
+	pimg = Image.fromarray((img_prediction*255.0).astype(np.uint8))
+	plt.imshow(pimg, cmap='Greys_r')
+	plt.show()

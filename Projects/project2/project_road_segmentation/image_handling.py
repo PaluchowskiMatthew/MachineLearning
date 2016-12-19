@@ -89,27 +89,6 @@ def extract_labels(filename, num_images, IMG_PATCH_SIZE):
     # Convert to dense 1-hot representation.
     return labels.astype(np.float32)
 
-def extract_labels_range(filename, img_range, IMG_PATCH_SIZE):
-    """Extract the labels into a 1-hot matrix [image index, label index]."""
-    gt_imgs = []
-    for i in range(img_range[0], img_range[1]+1):
-        imageid = "satImage_%.3d" % i
-        image_filename = filename + imageid + ".png"
-        if os.path.isfile(image_filename):
-            print ('Loading ' + image_filename)
-            img = mpimg.imread(image_filename)
-            gt_imgs.append(img)
-        else:
-            print ('File ' + image_filename + ' does not exist')
-
-    num_images = len(gt_imgs)
-    gt_patches = [img_crop(gt_imgs[i], IMG_PATCH_SIZE, IMG_PATCH_SIZE) for i in range(num_images)]
-    data = np.asarray([gt_patches[i][j] for i in range(len(gt_patches)) for j in range(len(gt_patches[i]))])
-    labels = np.asarray([value_to_class(np.mean(data[i])) for i in range(len(data))])
-
-    # Convert to dense 1-hot representation.
-    return labels.astype(np.float32)
-
 # Convert array of labels to an image
 def label_to_img(imgwidth, imgheight, w, h, labels):
     array_labels = np.zeros([imgwidth, imgheight])
