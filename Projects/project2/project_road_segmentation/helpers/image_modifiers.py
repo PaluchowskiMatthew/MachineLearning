@@ -37,7 +37,7 @@ def rotate_imgs(imgs_array, angle_step):
 
     """
     rotated_imgs = []
-    number_of_rotations = math.floor(90 / angle_step)
+    number_of_rotations = int(math.floor(90 / angle_step))
 
     for img in imgs_array:
         for rotation_number in range(1, number_of_rotations+1):

@@ -30,7 +30,7 @@ def train_cnn(model_name='ec2_model.h5'):
     ROOT_DIR = "training/"
     TOTAL_IMAGES = 100 # Number of images to load
     TRAIN_FRACTION = 0.8 # Percentage of images used for training
-    ANGLE_STEP = False # Gotta be 90/ANGLE_STEP needs to be an integer
+    ANGLE_STEP = 5 # Gotta be 90/ANGLE_STEP needs to be an integer
     FLIP = False # Flag to signal if flipped  versions of rotated images should also be created
     PATCH_SIZE = 8
     PATCH_TRANSLATION = 0 # WARNING: this quickly explodes to enormous amount of data if small patch_translation is selected.
@@ -47,7 +47,7 @@ def train_cnn(model_name='ec2_model.h5'):
     # ********** Tuning parameters: (See Network architecture as well)
 
     # Epochs to be trained
-    nb_epoch = 100
+    nb_epoch = 50
     # number of convolutional filters to use
     nb_filters = 64
     # size of pooling area for max pooling
@@ -97,7 +97,7 @@ def train_cnn(model_name='ec2_model.h5'):
     model.add(Convolution2D(nb_filters, kernel_size[1], kernel_size[0]))
     model.add(Activation('relu'))
 
-    model.add(SpatialDropout2D(0.25))
+    model.add(GaussianDropout(0.25))
 
     # Third convolution
     model.add(Convolution2D(nb_filters, kernel_size[0], kernel_size[0]))
@@ -105,12 +105,14 @@ def train_cnn(model_name='ec2_model.h5'):
 
     # Pooling and dropout
     model.add(MaxPooling2D(pool_size=pool_size))
-    model.add(SpatialDropout2D(0.25))
+    model.add(GaussianDropout(0.25))
 
     # Full-connected layer
     model.add(Flatten())
     model.add(Dense(1024))
     model.add(Activation('relu'))
+
+    model.add(GaussianDropout(0.25))
 
     model.add(Dense(1024))
     model.add(Activation('relu'))
@@ -122,7 +124,7 @@ def train_cnn(model_name='ec2_model.h5'):
     model.add(Activation('relu'))
 
     # Dropout to avoid overfitting
-    model.add(Dropout(0.5))
+    model.add(GaussianDropout(0.5))
 
     #Fully-connected layer to ouptut the resulting class
     model.add(Dense(nb_classes))
@@ -163,7 +165,7 @@ def train_cnn(model_name='ec2_model.h5'):
  #                           samplewise_center=True,
  #                           samplewise_std_normalization=True,
  #                           zca_whitening=False,
-                            rotation_range=90,
+ #                           rotation_range=45,
                             shear_range=0.2,
                             width_shift_range=0.25,
                             height_shift_range=0.25,
@@ -177,13 +179,13 @@ def train_cnn(model_name='ec2_model.h5'):
 
     # compute quantities required for featurewise normalization
     # (std, mean, and principal components if ZCA whitening is applied)
-    train_datagen.fit(X_train)
+#    train_datagen.fit(X_train)
 #    test_datagen.fit(X_test)
 
 
     # fits the model on batches with real-time data augmentation:
     model.fit_generator(train_datagen.flow(X_train, Y_train, batch_size=batch_size),
-                        samples_per_epoch=train_dataset_size*10, nb_epoch=nb_epoch, class_weight='auto', callbacks=callbacks_list, verbose=1, validation_data=(X_test, Y_test))
+                        samples_per_epoch=len(X_train), nb_epoch=nb_epoch, class_weight='auto', callbacks=callbacks_list, verbose=1, validation_data=(X_test, Y_test))
 
 #     model.fit_generator(X_train_small, Y_train_small, batch_size=batch_size, nb_epoch=nb_epoch, class_weight='auto', callbacks=callbacks_list, verbose=1, validation_data=(X_test, Y_test))
 
