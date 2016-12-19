@@ -5,23 +5,16 @@ import numpy
 import matplotlib.image as mpimg
 import matplotlib.pyplot as plt
 from PIL import Image
-from new_process import new_process
+from post_processing_NN import post_process
 
 IMG_PATCH_SIZE = 8
-
-"""
-TO DO:
-
-PROCESS IMG PREDICTIONS
-
-"""
 
 def predict(model_name):
 	data_dir = 'test_set_images/'
 	pred_dir = 'predictions/'
 
 	print("launch post")
-	new_process(model_name, [1, 10])
+	new_process(model_name, [1, 2])
 	return
 
 	model_path = 'models/' + model_name
