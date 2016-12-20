@@ -179,3 +179,82 @@ def extract_labels_post(train_range, train_labels_filename, PATCH_UNIT, PATCH_WI
             for y in range(w, size_tr+w):
                 Y[im_off+x_off+(y-w), :] = labels[im, x, y, :] #labels: center pixel of groundtruth image
     return Y
+
+def extract_data_padded(model_name, train_range, train_data_filename, file_str, PATCH_UNIT, PATCH_WINDOW, img_SIZE):
+    
+    # **** LOAD FIRST MODEL *****************
+    model_path = 'models/' + model_name
+
+    model = load_model(model_path)
+    model.compile(loss='categorical_crossentropy',
+                   optimizer='adadelta',
+                   metrics=['fmeasure'])
+
+    # **** LOAD IMAGES ***********************
+    w = int((PATCH_WINDOW-1)/2)
+
+    num_images = train_range[1]-train_range[0]+1
+    pred_size = int(img_SIZE/PATCH_UNIT)
+    pad_size = pred_size + 2*w
+    imgs = np.zeros((num_images, pad_size, pad_size))
+
+    for j,i in enumerate(range(train_range[0], train_range[1]+1)):
+        imageid = file_str % i
+        image_filename = train_data_filename + imageid + ".png"
+        if os.path.isfile(image_filename):
+            print ('Predicting' + image_filename)
+            img = mpimg.imread(image_filename)
+            data = np.asarray(img_crop(img, PATCH_UNIT, PATCH_UNIT))
+            predictions_patch = model.predict_classes(data, verbose=1)
+            padded = np.reshape(predictions_patch, (pred_size, pred_size))
+            padded = np.pad(padded, ((w, w), (w, w)), 'symmetric')
+            #import pdb;pdb.set_trace()
+            # Store the predictions in tensor with shape [image index, patch_index x, patch index y, value of prediction]
+            imgs[j, :, :] = padded
+        else:
+            print ('File ' + image_filename + ' does not exist')
+
+    #***** CREATE TENSOR **********************
+    
+    #size_tr = int(new_size - 2*w)
+    X = np.zeros((num_images*(pred_size**2), PATCH_WINDOW, PATCH_WINDOW))
+    # Slide the patch window through each image and assign to each patch the center label of groundtrhuth image
+    for im in range(num_images):
+        im_off = im*pred_size**2 #Image offset
+        for x in range(w,pred_size+w):
+            x_off = pred_size*(x-w) # x-axis offset
+            for y in range(w, pred_size+w):
+                y_off = (y-w) # y-axis offset
+                X[im_off+x_off+y_off, :, :] = imgs[im, (x-w):(x+w+1), (y-w):(y+w+1)] #data: square corresponding to PATcH_WINDOW labels predicted
+    return np.reshape(X, (X.shape[0], X.shape[1], X.shape[2], 1))
+
+def extract_labels_padded(train_range, train_labels_filename, PATCH_UNIT, PATCH_WINDOW):
+
+    nb_class = 2
+    num_images = train_range[1]-train_range[0]+1
+    pred_size = int(IMG_SIZE/PATCH_UNIT)
+    labels = np.zeros((num_images, pred_size, pred_size, nb_class))
+
+    # **** EXTRACT GROUNDTRUTH *****************
+    for j, i in enumerate(range(train_range[0], train_range[1]+1)):
+        imageid = "satImage_%.3d" % i
+        image_filename = train_labels_filename + imageid + ".png"
+        if os.path.isfile(image_filename):
+            print ('Loading ' + image_filename)
+            img = mpimg.imread(image_filename)
+            img_patch = img_crop(img, PATCH_UNIT, PATCH_UNIT)
+            img_lab = np.asarray([value_to_class(np.mean(np.asarray(img_patch[ii]))) for ii in range(len(img_patch))])
+            # Store labels in tensor with shape [image index, patch x, patch y , mean label of patch]
+            labels[j, :, :, :] = np.reshape(img_lab, (pred_size, pred_size, nb_class))
+        else:
+            print ('File ' + image_filename + ' does not exist')
+
+    # ******** CREATE TENSOR ******************
+    Y = np.zeros((num_images*(pred_size**2), nb_class))
+    for im in range(num_images):
+        im_off = im*(pred_size**2) #Image offset
+        for x in range(pred_size):
+            x_off = pred_size*x # x-axis offset
+            for y in range(pred_size):
+                Y[im_off+x_off+y, :] = labels[im, x, y, :] #labels: center pixel of groundtruth image
+    return Y

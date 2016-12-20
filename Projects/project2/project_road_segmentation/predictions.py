@@ -7,11 +7,11 @@ import matplotlib.pyplot as plt
 from PIL import Image
 from post_processing_NN import post_process
 
-IMG_PATCH_SIZE = 8
-PATCH_WINDOW = 11
+IMG_PATCH_SIZE = 4
+PATCH_WINDOW = 21
 IMG_SIZE = 608
 
-def predict(model_name):
+def predict(model_name, post_model_name):
 	"""
 		Creates predictions of the test images.
 		Inputs:
@@ -30,21 +30,21 @@ def predict(model_name):
 
 	model_path = 'models/' + model_name
 
+	"""
 	main_model = load_model(model_path)
 	main_model.compile(loss='categorical_crossentropy',
 				   optimizer='adadelta',
 				   metrics=['fmeasure'])
-
-	model_path2 = 'models/POST/post.h5'
-
+	"""
+	model_path2 = 'models/POST/' + post_model_name
 	model_post = load_model(model_path2)
 	model_post.compile(loss='categorical_crossentropy',
 				   optimizer='adadelta',
 				   metrics=['fmeasure'])
 
 	new_size = int(IMG_SIZE/IMG_PATCH_SIZE)
-	w = int((PATCH_WINDOW-1)/2)
-	size_tr = int(new_size - 2*w) 
+	#w = int((PATCH_WINDOW-1)/2)
+	#size_tr = int(new_size - 2*w) 
 
 	for i in range(1, 51):
 		imageid = "test_%.1d" % i
@@ -53,6 +53,9 @@ def predict(model_name):
 			print ('Predicting' + image_filename)
 			img = mpimg.imread(image_filename)
 
+			input_cnn_post = extract_data_padded(model_name, [i, i], data_dir, "test_%.1d", IMG_PATCH_SIZE, PATCH_WINDOW, IMG_SIZE)
+			total_img = model_post.predict_classes(input_cnn_post, verbose=1)
+			"""
 			data_cnn_1 = numpy.asarray(img_crop(img, IMG_PATCH_SIZE, IMG_PATCH_SIZE))
 
 			predictions_patch_cnn_1 = main_model.predict_classes(data_cnn_1, verbose=1)
@@ -70,11 +73,12 @@ def predict(model_name):
 			center_img = numpy.reshape(predictions_patch_cnn_2, (size_tr, size_tr))
 			for x in range(w, size_tr+w):
 				for y in range(w, size_tr+w):
-					total_img[x, y] = -(center_img[x-w, y-w]-1)
+					total_img[x, y] = center_img[x-w, y-w]
+			"""
 
 			img_prediction = label_to_img(img.shape[0], img.shape[1], 
 										  IMG_PATCH_SIZE, IMG_PATCH_SIZE, 
-										  numpy.reshape(total_img, (new_size*new_size)))
+										  total_img)
 
 			pimg = Image.fromarray((img_prediction*255.0).astype(np.uint8))
 			pimg.save(pred_dir + "prediction_" + str(i) + ".png")
