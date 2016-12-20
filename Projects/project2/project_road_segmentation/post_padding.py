@@ -65,6 +65,7 @@ def post_padd(model_name, train_range, post_name='dummy.h5'):
 	train_labels_filename = data_dir + 'groundtruth/'
 	file_str = "satImage_%.3d"
 
+	# Extract the data from images by predicting with first CNN and padd the results
 	pred = extract_data_padded(model_name, train_range, train_data_filename, file_str, 
 								PATCH_UNIT, PATCH_WINDOW, IMG_SIZE)
 	Y = extract_labels_padded(train_range, train_labels_filename, PATCH_UNIT, PATCH_WINDOW)
