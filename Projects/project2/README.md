@@ -8,7 +8,8 @@ Marie Drieghe, Lazare Girardin, Mateusz Paluchowski @ EPFL 2016
 [Feasibility & Constraints](#Feasibility)     
 [Deliverables](#Deliverables)      
 [Timeplan](#Timeplan)  
-[Libraries and Frameworks](#Frameworks)    
+[Libraries and Frameworks](#Frameworks) 
+[File Structure](#Structure)
 
 <a name="Abstract"/>
 ## Abstract
@@ -56,6 +57,7 @@ Rules for the code part:
 - Keras
 - [tqdm](https://github.com/noamraph/tqdm) - for-loop progress bar 
 
+<a name="Structure"/>
 ## File structure
 - Helpers: python files containing helpers for pre-processing, post-processing, perfomance measurements, visualization and submission
 - Models: folder containing all trained models mentioned in the report
