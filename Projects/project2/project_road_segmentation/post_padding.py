@@ -1,7 +1,7 @@
 """
 	********* PCML: MINIPROJECT 2 ROAD SEGEMENTATION ***********************
 
-	This function train a second Neural Net used as a generalization of post processing
+	This function trains a second Neural Net used as a generalization of post processing
 	morphological functions. The input of the CNN are patches of size PATCH_WINDOW (number of
 	patch unit used for the window) and aim to output the center pixel of this window. Labels
 	are taken from the groundtruth images.
@@ -16,8 +16,8 @@
 			-model_name:  the name of the first neural net whose predictions are used as inputs
 						  The model has to be on path: 'models/'
 						  Exemple: 'main_8x8.h5'
-			-train range: Range of training images to be trained on (which allows to train the 
-						  network on totally different images than the first network). It should be 
+			-train range: Range of training images to be trained on (which allows to train the
+						  network on totally different images than the first network). It should be
 						  of the form: [51, 100] for images from 51 to 100.
 			-post_name:   Name of the saved trained network, in directory 'models/POST/'
 						  Exemple: 'padded_8x8.h5'
@@ -57,7 +57,7 @@ def post_padd(model_name, train_range, post_name='dummy.h5'):
 	# Training batch size
 	batch_size = 128
 	# Number of epochs for training
-	nb_epoch = 7
+	nb_epoch = 3
 
 	#******* EXCTRACT DATA ***********************************************************
 	data_dir = 'training/'
@@ -66,7 +66,7 @@ def post_padd(model_name, train_range, post_name='dummy.h5'):
 	file_str = "satImage_%.3d"
 
 	# Extract the data from images by predicting with first CNN and padd the results
-	pred = extract_data_padded(model_name, train_range, train_data_filename, file_str, 
+	pred = extract_data_padded(model_name, train_range, train_data_filename, file_str,
 								PATCH_UNIT, PATCH_WINDOW, IMG_SIZE)
 	Y = extract_labels_padded(train_range, train_labels_filename, PATCH_UNIT, PATCH_WINDOW)
 
@@ -118,7 +118,7 @@ def post_padd(model_name, train_range, post_name='dummy.h5'):
 	model2.add(Dense(512))
 	model2.add(Activation('relu'))
 	model2.add(Dropout(0.25))
-	
+
 	model2.add(Dense(nb_class))
 	model2.add(Activation('softmax'))
 
@@ -128,7 +128,7 @@ def post_padd(model_name, train_range, post_name='dummy.h5'):
 			  metrics=['fmeasure'])
 
 	# Train the model
-	model2.fit(X_train, Y_train, batch_size=batch_size, nb_epoch=nb_epoch, 
+	model2.fit(X_train, Y_train, batch_size=batch_size, nb_epoch=nb_epoch,
 			  class_weight='auto', verbose=1, validation_data=(X_test, Y_test))
 
 	# Evaluate the model
@@ -144,11 +144,11 @@ def post_padd(model_name, train_range, post_name='dummy.h5'):
 	"""
 	try1 = extract_data_padded(model_name, [3, 3], train_data_filename, file_str,
 								PATCH_UNIT, PATCH_WINDOW, IMG_SIZE)
-	
+
 	predictions_patch = model2.predict_classes(try1, verbose=1)
 
-	img_prediction = label_to_img(new_size*PATCH_UNIT, new_size*PATCH_UNIT, 
-										  PATCH_UNIT, PATCH_UNIT, 
+	img_prediction = label_to_img(new_size*PATCH_UNIT, new_size*PATCH_UNIT,
+										  PATCH_UNIT, PATCH_UNIT,
 										  predictions_patch)
 
 	pimg = Image.fromarray((img_prediction*255.0).astype(np.uint8))

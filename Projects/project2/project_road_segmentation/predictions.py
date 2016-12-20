@@ -1,7 +1,7 @@
 """
 	********* PCML: MINIPROJECT 2 ROAD SEGEMENTATION ***********************
 
-	This function predicts the images of the test set and creat a submission file. 
+	This function predicts the images of the test set and creates a submission file. 
 
 	Function predict():
 		Inputs:
@@ -57,7 +57,7 @@ def predict(model_name, post_model_name):
 
 	new_size = int(IMG_SIZE/IMG_PATCH_SIZE)
 	#w = int((PATCH_WINDOW-1)/2)
-	#size_tr = int(new_size - 2*w) 
+	#size_tr = int(new_size - 2*w)
 
 	for i in range(1, 51):
 		imageid = "test_%.1d" % i
@@ -89,8 +89,8 @@ def predict(model_name, post_model_name):
 					total_img[x, y] = center_img[x-w, y-w]
 			"""
 
-			img_prediction = label_to_img(img.shape[0], img.shape[1], 
-										  IMG_PATCH_SIZE, IMG_PATCH_SIZE, 
+			img_prediction = label_to_img(img.shape[0], img.shape[1],
+										  IMG_PATCH_SIZE, IMG_PATCH_SIZE,
 										  total_img)
 
 			pimg = Image.fromarray((img_prediction*255.0).astype(np.uint8))

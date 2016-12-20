@@ -11,7 +11,7 @@
 	Function train_cnn():
 		Input:
 			-model_name: the name desired to store the resulting trained network
-						 Exemple: 'main_8x8.h5'
+						 Example: 'main_8x8.h5'
 		Ouput:
 			-trained network in folder 'models/', as an .h5 file
 
@@ -31,8 +31,7 @@ from keras import backend as K
 from image_handling import *
 
 # CALL THIS FUNCTION TO TRAIN FIRST NEURAL NET
-def train_cnn(model_name='dummy.h5'):
-
+def train_cnn(model_name='first.h5'):
 	# ********** PARAMETERS **********************************************
 	# Number of images to used for training this neural network
 	NUMBER_IMGS = 50
@@ -49,7 +48,7 @@ def train_cnn(model_name='dummy.h5'):
 	# size of patch of an image to be used as input and output of the neural net
 	IMG_PATCH_SIZE = 8
 	# Epochs to be trained
-	nb_epoch = 12
+	nb_epoch = 3
 	# number of convolutional filters to use
 	nb_filters_layer1 = 64
 	nb_filters_layer2 = 128
@@ -65,7 +64,7 @@ def train_cnn(model_name='dummy.h5'):
 	# ***************** HANDLE THE DATA **********************************
 	data_dir = 'training/'
 	train_data_filename = data_dir + 'images/'
-	train_labels_filename = data_dir + 'groundtruth/' 
+	train_labels_filename = data_dir + 'groundtruth/'
 
 	# Extract data into numpy arrays.
 	data = extract_data(train_data_filename, NUMBER_IMGS, IMG_PATCH_SIZE)
@@ -78,24 +77,24 @@ def train_cnn(model_name='dummy.h5'):
 	Y_train = labels[idx[:train_size]]
 	X_test = data[idx[train_size:]]
 	Y_test = labels[idx[train_size:]]
-	
+
 	# **************** DEFINE THE MODEL ARCHITECTURE *******************
 
 	model = Sequential()
 
 	# Convolution layer with rectified linear activation
-	model.add(Convolution2D(nb_filters_layer1, kernel_size_layer2[0], 
+	model.add(Convolution2D(nb_filters_layer1, kernel_size_layer2[0],
 							kernel_size_layer2[1], border_mode='same',
 							input_shape=input_shape))
 	model.add(Activation('relu'))
 
 	# Second convolution
-	model.add(Convolution2D(nb_filters_layer2, kernel_size_layer2[0], 
+	model.add(Convolution2D(nb_filters_layer2, kernel_size_layer2[0],
 							kernel_size_layer2[1]))
 	model.add(Activation('relu'))
 
 	# Third convolution
-	model.add(Convolution2D(nb_filters_layer1, kernel_size_layer1[0], 
+	model.add(Convolution2D(nb_filters_layer1, kernel_size_layer1[0],
 							kernel_size_layer2[1]))
 	model.add(Activation('relu'))
 
@@ -132,7 +131,7 @@ def train_cnn(model_name='dummy.h5'):
 	#			  metrics=['fmeasure'])
 
 	# Train the model
-	model.fit(X_train, Y_train, batch_size=batch_size, nb_epoch=nb_epoch, 
+	model.fit(X_train, Y_train, batch_size=batch_size, nb_epoch=nb_epoch,
 			  class_weight='auto', verbose=1, validation_data=(X_test, Y_test))
 
 	# Evaluate the model on the test set (excluded from training)
