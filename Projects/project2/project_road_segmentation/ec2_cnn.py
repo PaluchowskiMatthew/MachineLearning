@@ -25,12 +25,12 @@ from keras.callbacks import ModelCheckpoint
 from keras.preprocessing.image import ImageDataGenerator
 
 
-def train_cnn(model_name='ec2_model.h5'):
+def train_cnn(model_name='ec2_model_gpu_v2.h5'):
     # GLOBAL VARIABLES
     ROOT_DIR = "training/"
     TOTAL_IMAGES = 100 # Number of images to load
-    TRAIN_FRACTION = 0.8 # Percentage of images used for training
-    ANGLE_STEP = 5 # Gotta be 90/ANGLE_STEP needs to be an integer
+    TRAIN_FRACTION = 1 # Percentage of images used for training
+    ANGLE_STEP = 9 # Gotta be 90/ANGLE_STEP needs to be an integer
     FLIP = False # Flag to signal if flipped  versions of rotated images should also be created
     PATCH_SIZE = 8
     PATCH_TRANSLATION = 0 # WARNING: this quickly explodes to enormous amount of data if small patch_translation is selected.
@@ -47,7 +47,7 @@ def train_cnn(model_name='ec2_model.h5'):
     # ********** Tuning parameters: (See Network architecture as well)
 
     # Epochs to be trained
-    nb_epoch = 50
+    nb_epoch = 25
     # number of convolutional filters to use
     nb_filters = 64
     # size of pooling area for max pooling
@@ -112,13 +112,13 @@ def train_cnn(model_name='ec2_model.h5'):
     model.add(Dense(1024))
     model.add(Activation('relu'))
 
-    model.add(GaussianDropout(0.25))
+    #model.add(GaussianDropout(0.25))
 
-    model.add(Dense(1024))
-    model.add(Activation('relu'))
+    #model.add(Dense(1024))
+    #model.add(Activation('relu'))
 
     # Dropout to avoid overfitting
-    model.add(GaussianDropout(0.25))
+    #model.add(GaussianDropout(0.25))
 
     model.add(Dense(1024))
     model.add(Activation('relu'))
@@ -138,11 +138,12 @@ def train_cnn(model_name='ec2_model.h5'):
     callbacks_list = [checkpoint]
 
     #class_weight = auto??
-    # idx = np.random.permutation(np.arange(X_train.shape[0]))
-    # train_size = min(3000000, int(X_train.shape[0]))
-    # X_train_small = X_train[idx[:train_size]]
-    # Y_train_small = Y_train[idx[:train_size]]
-
+    idx = np.random.permutation(np.arange(X_train.shape[0]))
+    train_size = int(X_train.shape[0] * 0.9)
+    X_test = X_train[idx[train_size:]]
+    Y_test = Y_train[idx[train_size:]]
+    X_train = X_train[idx[:train_size]]
+    Y_train = Y_train[idx[:train_size]]
 
     """
     featurewise_center: Boolean. Set input mean to 0 over the dataset, feature-wise.
@@ -166,7 +167,7 @@ def train_cnn(model_name='ec2_model.h5'):
  #                           samplewise_std_normalization=True,
  #                           zca_whitening=False,
  #                           rotation_range=45,
-                            shear_range=0.2,
+                            shear_range=0.25,
                             width_shift_range=0.25,
                             height_shift_range=0.25,
                             horizontal_flip=True,
