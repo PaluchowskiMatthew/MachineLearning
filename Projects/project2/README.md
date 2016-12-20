@@ -62,3 +62,6 @@ Rules for the code part:
 - Models: folder containing all trained models mentioned in the report
 - Baseline.ipynb: implementation of a random baseline
 - KNeighborsClassifier.ipynb: implementation of a K Nearest Neighbors approach
+- cnn.py: implementation of first neural network that performs road segmentation on patches of the provided images
+- post_padded.py: implementation of post processing neural network that tries to clean up the predictions of the first neural network. It works on the predictions from the first CNN and tries to predict the center of a larger patch.
+- predictions.py: the predict() function takes a primary neural net and a post processing neural net and uses them to make a prediction and outputs a submission file.
