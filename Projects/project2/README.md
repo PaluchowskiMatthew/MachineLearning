@@ -9,7 +9,7 @@ Marie Drieghe, Lazare Girardin, Mateusz Paluchowski @ EPFL 2016
 [Deliverables](#Deliverables)      
 [Timeplan](#Timeplan)  
 [Libraries and Frameworks](#Frameworks) 
-[File Structure](#Structure)
+[File Structure](#Structure) 
 
 <a name="Abstract"/>
 ## Abstract
