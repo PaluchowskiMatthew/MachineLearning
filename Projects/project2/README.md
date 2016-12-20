@@ -8,9 +8,8 @@ Marie Drieghe, Lazare Girardin, Mateusz Paluchowski @ EPFL 2016
 [Feasibility & Constraints](#Feasibility)     
 [Deliverables](#Deliverables)      
 [Timeplan](#Timeplan)  
-[Libraries and Frameworks](#Frameworks) 
-[File Structure](#Structure) 
-
+[Libraries and Frameworks](#Frameworks)   
+[File Structure](#Structure)  
 <a name="Abstract"/>
 ## Abstract
 For this choice of project task, we are provided with a set of satellite images acquired from GoogleMaps and also ground-truth images where each pixel is labeled as road or background.
