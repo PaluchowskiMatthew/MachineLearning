@@ -1,3 +1,29 @@
+"""
+    ********* PCML: MINIPROJECT 2 ROAD SEGEMENTATION ***********************
+
+    This files contains functions to handle the images for training and testing the Neural Nets
+
+    Functions:
+    [--- TAKEN FROM baseline_cnn.py -----]
+        - img_crop():       Crop an image and return a list of patches
+        - extract_data():   Extract patches of images to be used as inputs for traing the first CNN]
+        - value_to_class(): Returns the class given a certain value (mean of a patch)
+        - extract_labels(): Extract the labels of patches from groundtruth images, 
+                            to be used for training of the first CNN
+        - label_to_img():   Convert an array of patches to an images
+
+    [--- NEW -----]
+        - extract_data_post():      Extract data from an image range sliding a window over the images. 
+                                    To be used in second CNN when not padding the image
+        - extract_labels_post():    Extract labels from groundtruth from an image range when sliding a window.
+                                    To be used in second CNN when not padding the image
+        - extract_labels_padded():  Extract data from an image range sliding a window over the images. 
+                                    To be used in second CNN when padding the image
+        - extract_labels_padded():  Extract labels from groundtruth from an image range when sliding a window.
+                                    To be used in second CNN when padding the image
+
+    authors: Maateusz Paaluchowski, Marie Drieghe and Lazare Girardin
+"""
 import gzip
 import os
 import sys
@@ -59,15 +85,6 @@ def value_to_class(v):
     else:
         return [0, 1]
 
-
-def bin_value_to_class(v):
-    foreground_threshold = 0.25 # percentage of pixels > 1 required to assign a foreground label to a patch
-    df = np.sum(v)
-    if df > foreground_threshold:
-        return 0 
-    else:
-        return 1
-
 def extract_labels(filename, num_images, IMG_PATCH_SIZE):
     """Extract the labels into a 1-hot matrix [image index, label index]."""
     gt_imgs = []
@@ -96,15 +113,30 @@ def label_to_img(imgwidth, imgheight, w, h, labels):
     for i in range(0,imgheight,h):
         for j in range(0,imgwidth,w):
             if labels[idx] > 0.5:
-                l = 1
-            else:
                 l = 0
+            else:
+                l = 1
             array_labels[j:j+w, i:i+h] = l
             idx = idx + 1
     return array_labels
 
 def extract_data_post(model_name, train_range, train_data_filename, PATCH_UNIT, PATCH_WINDOW):
-    
+    """
+       Extract data from an image range sliding a window over the images.
+       The slinding start and stop before the border of the window because the outside is not defined.
+       To be used in second CNN when not padding the image.
+       Inputs:
+            -model_name:            Name of the CNN used to predict on images (in 'models/')
+                                    Exemple: 'main_8x8.h5'
+            -train_range:           Range of images extract the data.
+                                    Exemple: [51, 100]
+            -train_data_filename:   Base folder for the images to be extracted
+                                    Exemple: 'Training/images'
+            -PATCH_UNIT:            Pixel size of patches used by model_name
+            -PATCH_WINDOW:          Size of the sliding window
+        Ouput:
+            -X:                     4D tensor with shape [patch index, window x-axis, window y-axis, value]  
+    """
     # **** LOAD FIRST MODEL *****************
     model_path = 'models/' + model_name
 
@@ -148,6 +180,20 @@ def extract_data_post(model_name, train_range, train_data_filename, PATCH_UNIT, 
     return X
 
 def extract_labels_post(train_range, train_labels_filename, PATCH_UNIT, PATCH_WINDOW):
+    """
+       Extract labels from groundtruth from an image range when sliding a window.
+       The slinding start and stop before the border of the window because the outside is not defined.
+       To be used in second CNN when not padding the image
+       Inputs:
+            -train_range:           Range of images extract the data.
+                                    Exemple: [51, 100]
+            -train_data_filename:   Base folder for the images to be extracted
+                                    Exemple: 'Training/images'
+            -PATCH_UNIT:            Pixel size of patches used by model_name
+            -PATCH_WINDOW:          Size of the sliding window
+        Ouput:
+            -Y:                     2D tensor with shape [patch index, class]  
+    """ 
 
     nb_class = 2
     num_images = train_range[1]-train_range[0]+1
@@ -181,7 +227,26 @@ def extract_labels_post(train_range, train_labels_filename, PATCH_UNIT, PATCH_WI
     return Y
 
 def extract_data_padded(model_name, train_range, train_data_filename, file_str, PATCH_UNIT, PATCH_WINDOW, img_SIZE):
-    
+    """
+       Extract data from an image range sliding a window over the images.
+       The slinding start and stop before at border of the window (which is mirror padded).
+       To be used in second CNN when padding the image.
+       Inputs:
+            -model_name:            Name of the CNN used to predict on images (in 'models/')
+                                    Exemple: 'main_8x8.h5'
+            -train_range:           Range of images extract the data.
+                                    Exemple: [51, 100]
+            -train_data_filename:   Base folder for the images to be extracted
+                                    Exemple: 'Training/images'
+            - file_str:             Base name of the images.
+                                    Exemple: "satImage_%.3d" for training, "test_%.1d" for test images
+            -PATCH_UNIT:            Pixel size of patches used by model_name
+            -PATCH_WINDOW:          Size of the sliding window
+            -img_SIZE:              Size of the images (400 for training, 608 for test)
+        Ouput:
+            -X:                     4D tensor with shape [patch index, window x-axis, window y-axis, value]  
+    """
+
     # **** LOAD FIRST MODEL *****************
     model_path = 'models/' + model_name
 
@@ -215,8 +280,6 @@ def extract_data_padded(model_name, train_range, train_data_filename, file_str, 
             print ('File ' + image_filename + ' does not exist')
 
     #***** CREATE TENSOR **********************
-    
-    #size_tr = int(new_size - 2*w)
     X = np.zeros((num_images*(pred_size**2), PATCH_WINDOW, PATCH_WINDOW))
     # Slide the patch window through each image and assign to each patch the center label of groundtrhuth image
     for im in range(num_images):
@@ -229,7 +292,20 @@ def extract_data_padded(model_name, train_range, train_data_filename, file_str, 
     return np.reshape(X, (X.shape[0], X.shape[1], X.shape[2], 1))
 
 def extract_labels_padded(train_range, train_labels_filename, PATCH_UNIT, PATCH_WINDOW):
-
+    """
+       Extract labels from groundtruth from an image range when sliding a window.
+       The slinding start and stop at the border of the window (which is mirror padded).
+       To be used in second CNN when padding the image
+       Inputs:
+            -train_range:           Range of images extract the data.
+                                    Exemple: [51, 100]
+            -train_data_filename:   Base folder for the images to be extracted
+                                    Exemple: 'Training/images'
+            -PATCH_UNIT:            Pixel size of patches used by model_name
+            -PATCH_WINDOW:          Size of the sliding window
+        Ouput:
+            -Y:                     2D tensor with shape [patch index, class]  
+    """ 
     nb_class = 2
     num_images = train_range[1]-train_range[0]+1
     pred_size = int(IMG_SIZE/PATCH_UNIT)

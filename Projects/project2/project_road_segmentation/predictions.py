@@ -1,19 +1,9 @@
-from keras.models import load_model
-from mask_to_submission import *
-from image_handling import *
-import numpy
-import matplotlib.image as mpimg
-import matplotlib.pyplot as plt
-from PIL import Image
-from post_processing_NN import post_process
+"""
+	********* PCML: MINIPROJECT 2 ROAD SEGEMENTATION ***********************
 
-IMG_PATCH_SIZE = 4
-PATCH_WINDOW = 21
-IMG_SIZE = 608
+	This function predicts the images of the test set and creat a submission file. 
 
-def predict(model_name, post_model_name):
-	"""
-		Creates predictions of the test images.
+	Function predict():
 		Inputs:
 			-main_model:  	name of the saved main neural network
 			-post_model:    name of the saved post processing network
@@ -21,7 +11,30 @@ def predict(model_name, post_model_name):
 		Outputs:
 			-Prediction folder with the images of the predictions of tests images
 			-Submission .CSV file for submission on kaggle
-	"""
+
+
+	authors: Maateusz Paaluchowski, Marie Drieghe and Lazare Girardin
+"""
+# ************ IMPORT LIBRARIES ************************************************
+from keras.models import load_model
+from mask_to_submission import *
+from image_handling import *
+import numpy
+import matplotlib.image as mpimg
+import matplotlib.pyplot as plt
+from PIL import Image
+
+def predict(model_name, post_model_name):
+
+	# *********** PARAMETERS ********************************************************
+	# Patches used by first CNN
+	IMG_PATCH_SIZE = 8
+	# Window used by second CNN
+	PATCH_WINDOW = 21
+	# Size of the test images
+	IMG_SIZE = 608
+
+
 	data_dir = 'test_set_images/'
 	pred_dir = 'predictions/'
 
@@ -87,7 +100,7 @@ def predict(model_name, post_model_name):
 
 
 	print("\n Done predicting")
-	submission_filename = 'cnn_try1.csv'
+	submission_filename = 'lastOUT_RENAME.csv'
 	image_filenames = []
 	for i in range(1, 51):
 		image_filename = 'predictions/prediction_' + str(i) + '.png'
