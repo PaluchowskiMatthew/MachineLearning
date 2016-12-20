@@ -53,8 +53,11 @@ Rules for the code part:
 <a name="Frameworks"/>
 ## Libraries and Frameworks
 - NumPy
-- (?) Pandas for feature engineering
-- (?) [OpenCV](http://opencv.org/)
-- (?) [Chainer](http://chainer.org/)
-- (?) [TensorFlow](https://www.tensorflow.org/)
+- Keras
 - [tqdm](https://github.com/noamraph/tqdm) - for-loop progress bar 
+
+## File structure
+- Helpers: python files containing helpers for pre-processing, post-processing, perfomance measurements, visualization and submission
+- Models: folder containing all trained models mentioned in the report
+- Baseline.ipynb: implementation of a random baseline
+- KNeighborsClassifier.ipynb: implementation of a K Nearest Neighbors approach
