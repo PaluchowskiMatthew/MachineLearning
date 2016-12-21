@@ -37,7 +37,7 @@ The image datasets are available from the course kaggle page here:
 - post_padded.py: implementation of post processing neural network that tries to clean up the predictions of the first neural network. It works on the predictions from the first CNN and tries to predict the center of a larger patch.
 - predictions.py: the predict() function takes a primary neural net and a post processing neural net and uses them to make a prediction and outputs a submission file.
 - primary_CNN_model.h5: Primary CNN model file stored in [Hierarchical Data Format](https://en.wikipedia.org/wiki/Hierarchical_Data_Format) (.h5) which was trained on whole dataset by running train_cnn() function from cnn.py file.
-- secondary_CNN_model.h5 Secondary CNN model file stored in [Hierarchical Data Format](https://en.wikipedia.org/wiki/Hierarchical_Data_Format) (.h5) which was trained on whole dataset by running post_padd_sec() function from post_cnn.py file.
+- secondary_CNN_model.h5: Secondary CNN model file stored in [Hierarchical Data Format](https://en.wikipedia.org/wiki/Hierarchical_Data_Format) (.h5) which was trained on whole dataset by running post_padd_sec() function from post_cnn.py file.
 
 <a name="DataStructure"/>
 ## Data structure
