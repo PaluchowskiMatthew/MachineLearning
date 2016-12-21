@@ -38,7 +38,7 @@ from keras import backend as K
 
 from image_handling import *
 import matplotlib.image as mpimg
-import matplotlib.pyplot as plt
+#import matplotlib.pyplot as plt
 from PIL import Image
 
 def extract_d(train_range, train_data_filename, file_str, PATCH_UNIT, PATCH_WINDOW, img_SIZE):
