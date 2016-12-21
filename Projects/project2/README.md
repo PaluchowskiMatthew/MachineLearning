@@ -5,9 +5,6 @@ Marie Drieghe, Lazare Girardin, Mateusz Paluchowski @ EPFL 2016
 ### Table of Contents  
 [Abstract](#Abstract)    
 [Data](#Data)    
-[Feasibility & Constraints](#Feasibility)     
-[Deliverables](#Deliverables)      
-[Timeplan](#Timeplan)  
 [Libraries and Frameworks](#Frameworks)   
 [File Structure](#Structure)  
 <a name="Abstract"/>
