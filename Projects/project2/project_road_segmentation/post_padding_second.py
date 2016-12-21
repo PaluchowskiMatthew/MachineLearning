@@ -45,6 +45,7 @@ def extract_d(train_range, train_data_filename, file_str, PATCH_UNIT, PATCH_WIND
  
 	 # **** LOAD IMAGES ***********************
 	w = int((PATCH_WINDOW-1)/2)
+	p = int(PATCH_UNIT/2)
 
 	num_images = train_range[1]-train_range[0]+1
 	pred_size = img_SIZE
@@ -68,9 +69,9 @@ def extract_d(train_range, train_data_filename, file_str, PATCH_UNIT, PATCH_WIND
 	# Slide the patch window through each image and assign to each patch the center label of groundtrhuth image
 	for im in range(num_images):
 		im_off = im*new_size**2 #Image offset
-		for i,x in enumerate(range(w+2, w+pred_size, PATCH_UNIT)):
+		for i,x in enumerate(range(w+p, w+pred_size, PATCH_UNIT)):
 			x_off = new_size*i # x-axis offset
-			for j, y in enumerate(range(w+2, w+pred_size, PATCH_UNIT)):
+			for j, y in enumerate(range(w+p, w+pred_size, PATCH_UNIT)):
 				X[im_off+x_off+j, :, :, :] = imgs[im, (x-w):(x+w+1), (y-w):(y+w+1), :] #data: square corresponding to PATcH_WINDOW labels predicted
 	return X
 
@@ -242,8 +243,6 @@ def post_padd_sec(model_name, train_range, post_name='dummy.h5'):
 		samplewise_std_normalization=False,  # divide each input by its std
 		zca_whitening=False,  # apply ZCA whitening
 		rotation_range=45,  # randomly rotate images in the range (degrees, 0 to 180)
-		width_shift_range=0.1,  # randomly shift images horizontally (fraction of total width)
-		height_shift_range=0.1,  # randomly shift images vertically (fraction of total height)
 		horizontal_flip=True,  # randomly flip images
 		vertical_flip=False)  # randomly flip images
 
