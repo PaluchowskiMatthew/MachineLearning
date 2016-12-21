@@ -30,6 +30,71 @@ from keras import backend as K
 
 from image_handling import *
 
+
+def extract_d(train_range, train_data_filename, file_str, PATCH_UNIT, PATCH_WINDOW, img_SIZE):
+ 
+	 # **** LOAD IMAGES ***********************
+	w = int((PATCH_WINDOW-1)/2)
+
+	num_images = train_range[1]-train_range[0]+1
+	pred_size = img_SIZE
+	pad_size = pred_size + 2*w
+	imgs = np.zeros((num_images, pad_size, pad_size, 3))
+
+	for j,i in enumerate(range(train_range[0], train_range[1]+1)):
+		imageid = file_str % i
+		image_filename = train_data_filename + imageid + ".png"
+		if os.path.isfile(image_filename):
+
+			img = mpimg.imread(image_filename)
+			padded = np.pad(img, ((w, w), (w, w), (0, 0)), 'symmetric')
+
+			# Store the predictions in tensor with shape [image index, patch_index x, patch index y, value of prediction]
+			imgs[j, :, :, :] = padded
+		else:
+			print ('File ' + image_filename + ' does not exist')
+
+	#***** CREATE TENSOR **********************
+	new_size = int((400)/PATCH_UNIT)
+	X = np.zeros((num_images*new_size**2, PATCH_WINDOW, PATCH_WINDOW, 3))
+	# Slide the patch window through each image and assign to each patch the center label of groundtrhuth image
+	for im in range(num_images):
+		im_off = im*new_size**2 #Image offset
+		for i,x in enumerate(range(w+4, w+pred_size, PATCH_UNIT)):
+			x_off = new_size*i # x-axis offset
+			for j, y in enumerate(range(w+4, w+pred_size, PATCH_UNIT)):
+				X[im_off+x_off+j, :, :, :] = imgs[im, (x-w):(x+w+1), (y-w):(y+w+1), :] #data: square corresponding to PATcH_WINDOW labels predicted
+	return X
+
+def extract_l(train_range, train_labels_filename, PATCH_UNIT, PATCH_WINDOW):
+	nb_class = 2
+	num_images = train_range[1]-train_range[0]+1
+	pred_size = int(400/PATCH_UNIT)
+	labels = np.zeros((num_images, pred_size, pred_size, nb_class))
+
+	# **** EXTRACT GROUNDTRUTH *****************
+	for j, i in enumerate(range(train_range[0], train_range[1]+1)):
+		imageid = "satImage_%.3d" % i
+		image_filename = train_labels_filename + imageid + ".png"
+		if os.path.isfile(image_filename):
+			print ('Loading ' + image_filename)
+			img = mpimg.imread(image_filename)
+			img_patch = img_crop(img, PATCH_UNIT,PATCH_UNIT)
+			img_lab = np.asarray([value_to_class(np.mean(np.asarray(img_patch[ii]))) for ii in range(len(img_patch))])
+			# Store labels in tensor with shape [image index, patch x, patch y , mean label of patch]
+			labels[j, :, :, :] = np.reshape(img_lab, (pred_size, pred_size, nb_class), order='F')
+		else:
+			print ('File ' + image_filename + ' does not exist')
+
+	Y = np.zeros((num_images*(pred_size**2), nb_class))
+	for im in range(num_images):
+		im_off = im*(pred_size**2) #Image offset
+		for x in range(pred_size):
+			x_off = pred_size*x # x-axis offset
+			for y in range(pred_size):
+				Y[im_off+x_off+y, :] = labels[im, x, y, :] #labels: center pixel of groundtruth image
+	return Y
+
 # CALL THIS FUNCTION TO TRAIN FIRST NEURAL NET
 def train_cnn(model_name='dummy.h5'):
 
@@ -48,6 +113,7 @@ def train_cnn(model_name='dummy.h5'):
 	# ********** Tuning parameters: (See Network architecture as well)
 	# size of patch of an image to be used as input and output of the neural net
 	IMG_PATCH_SIZE = 8
+	IMG_WINDOW = 17
 	# Epochs to be trained
 	nb_epoch = 12
 	# number of convolutional filters to use
@@ -59,7 +125,7 @@ def train_cnn(model_name='dummy.h5'):
 	kernel_size_layer1 = (5, 5)
 	kernel_size_layer2 = (3, 3)
 
-	input_shape = (IMG_PATCH_SIZE, IMG_PATCH_SIZE, NUM_CHANNELS)
+	input_shape = (IMG_WINDOW, IMG_WINDOW, NUM_CHANNELS)
 
 
 	# ***************** HANDLE THE DATA **********************************
@@ -68,8 +134,13 @@ def train_cnn(model_name='dummy.h5'):
 	train_labels_filename = data_dir + 'groundtruth/' 
 
 	# Extract data into numpy arrays.
-	data = extract_data(train_data_filename, NUMBER_IMGS, IMG_PATCH_SIZE)
-	labels = extract_labels(train_labels_filename, NUMBER_IMGS, IMG_PATCH_SIZE)
+	#data = extract_data(train_data_filename, NUMBER_IMGS, IMG_PATCH_SIZE)
+	#labels = extract_labels(train_labels_filename, NUMBER_IMGS, IMG_PATCH_SIZE)
+	data = extract_d([1,50], train_data_filename, "satImage_%.3d", IMG_PATCH_SIZE, IMG_WINDOW, 400)
+	labels = extract_l([1, 50], train_labels_filename, IMG_PATCH_SIZE, IMG_WINDOW)
+
+	print(data.shape)
+	print(labels.shape)
 
 	# Create train and test sets
 	idx = np.random.permutation(np.arange(data.shape[0]))
