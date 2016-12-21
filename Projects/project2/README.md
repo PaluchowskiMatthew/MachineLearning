@@ -24,7 +24,6 @@ The image datasets are available from the course kaggle page here:
 ## Libraries and Frameworks
 - NumPy
 - Keras
-- [tqdm](https://github.com/noamraph/tqdm) - for-loop progress bar 
 
 <a name="Structure"/>
 ## File structure
