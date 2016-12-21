@@ -6,7 +6,8 @@ Marie Drieghe, Lazare Girardin, Mateusz Paluchowski @ EPFL 2016
 [Abstract](#Abstract)    
 [Data](#Data)    
 [Libraries and Frameworks](#Frameworks)   
-[File Structure](#Structure)  
+[File Structure](#FileStructure)   
+[Data Structure](#DataStructure)   
 <a name="Abstract"/>
 ## Abstract
 For this choice of project task, we are provided with a set of satellite images acquired from GoogleMaps and also ground-truth images where each pixel is labeled as road or background.
@@ -19,10 +20,14 @@ The image datasets are available from the course kaggle page here:
 
 <a name="Frameworks"/>
 ## Libraries and Frameworks
-- NumPy
-- Keras
+- [NumPy](http://www.numpy.org/)
+- [Scikit-learn](http://scikit-learn.org/)
+- [Scikit-image](http://scikit-image.org/)
+- [Pillow](https://pillow.readthedocs.io/en/3.4.x/)
+- [Keras](https://keras.io/)
+  - [TensorFlow](https://www.tensorflow.org/) as backend
 
-<a name="Structure"/>
+<a name="FileStructure"/>
 ## File structure
 - Helpers: python files containing helpers for pre-processing, post-processing, perfomance measurements, visualization and submission
 - Models: folder containing all trained models mentioned in the report
@@ -31,3 +36,20 @@ The image datasets are available from the course kaggle page here:
 - cnn.py: implementation of first neural network that performs road segmentation on patches of the provided images
 - post_padded.py: implementation of post processing neural network that tries to clean up the predictions of the first neural network. It works on the predictions from the first CNN and tries to predict the center of a larger patch.
 - predictions.py: the predict() function takes a primary neural net and a post processing neural net and uses them to make a prediction and outputs a submission file.
+- primary_CNN_model.h5: Primary CNN model file stored in [Hierarchical Data Format](https://en.wikipedia.org/wiki/Hierarchical_Data_Format) (.h5) which was trained on whole dataset by running train_cnn() function from cnn.py file.
+- secondary_CNN_model.h5 Secondary CNN model file stored in [Hierarchical Data Format](https://en.wikipedia.org/wiki/Hierarchical_Data_Format) (.h5) which was trained on whole dataset by running post_padd_sec() function from post_cnn.py file.
+
+<a name="DataStructure"/>
+## Data structure
+The file structure of train images dataset should remained unchanged, however we change the format of test dataset.
+Thus input data should follow file structure as presented below:
+- training
+  - groundtruth
+    - satImage_001.png
+    - ...
+  - images
+    - satImage_001.png
+    - ...
+- test_set_images
+  - test_001.png
+  - ...
