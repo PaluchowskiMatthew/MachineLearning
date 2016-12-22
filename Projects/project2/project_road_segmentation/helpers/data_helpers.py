@@ -16,6 +16,17 @@ Notation Cheatsheet:
 (CUSTOM) - function created by us
 """
 
+def load_image(infilename):
+    """(ORIGINAL) Image loding function
+    Args:
+        infilename (str): Path of image file.
+    Returns:
+        [[[]]]: Image as 3D array (RGB)
+    """
+    data = mpimg.imread(infilename)
+    return data
+
+
 def load_img_gt(data_range):
 	""" (CUSTOM)
 	Function loading input images alongside ground truth images.
