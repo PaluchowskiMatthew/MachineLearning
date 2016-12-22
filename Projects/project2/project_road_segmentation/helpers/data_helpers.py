@@ -67,27 +67,27 @@ def load_img_gt(data_range):
 def img_crop(im, w, h):
 	"""(ORIGINAL) Crops image into n patches of h x w size
 
-    Args:
-        im (3D array): Image as a 3D array
-        w (int): width of a patch
-        h (int): height of a patch
+	Args:
+	    im (3D array): Image as a 3D array
+	    w (int): width of a patch
+	    h (int): height of a patch
 
-    Returns:
-        [ [[[]]] ]:  List of patches as 3D/2D array (binary/RGB)
+	Returns:
+	    [ [[[]]] ]:  List of patches as 3D/2D array (binary/RGB)
 
-    """
-    list_patches = []
-    imgwidth = im.shape[0]
-    imgheight = im.shape[1]
-    is_2d = len(im.shape) < 3
-    for i in range(0,imgheight,h):
-        for j in range(0,imgwidth,w):
-            if is_2d:
-                im_patch = im[j:j+w, i:i+h]
-            else:
-                im_patch = im[j:j+w, i:i+h, :]
-            list_patches.append(im_patch)
-    return list_patches
+	"""
+	list_patches = []
+	imgwidth = im.shape[0]
+	imgheight = im.shape[1]
+	is_2d = len(im.shape) < 3
+	for i in range(0,imgheight,h):
+	    for j in range(0,imgwidth,w):
+	        if is_2d:
+	            im_patch = im[j:j+w, i:i+h]
+	        else:
+	            im_patch = im[j:j+w, i:i+h, :]
+	        list_patches.append(im_patch)
+	return list_patches
 
 def value_to_class(img, threshold=0.25):
 	"""(ORIGINAL) Extract image/patch value to binary class of road(1)/non-road(0)
