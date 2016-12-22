@@ -33,7 +33,7 @@ The image datasets are available from the course kaggle page here:
 - Models: folder containing all trained models mentioned in the report
 - Baseline.ipynb: implementation of a random baseline
 - KNeighborsClassifier.ipynb: implementation of a K Nearest Neighbors approach
-- Multi Layer Perceptron.ipynb: implementation of a Multi Layer Perceptron approach
+- MultiLayerPerceptron.ipynb: implementation of a Multi Layer Perceptron approach
 - cnn.py: implementation of first neural network that performs road segmentation on patches of the provided images. WARNING: This script was runned on AWS g2.2xlarge instance on GPU and it took significant amount of time. It is not recommended to run it on a laptop.
 - post_cnn.py: implementation of post processing neural network that tries to clean up the predictions of the first neural network. It works on the predictions from the first CNN and tries to predict the center of a larger patch. WARNING: This script was runned on AWS g2.2xlarge instance on GPU and it took significant amount of time. It is not recommended to run it on a laptop.
 - primary_CNN_model.h5: Primary CNN model file stored in [Hierarchical Data Format](https://en.wikipedia.org/wiki/Hierarchical_Data_Format) (.h5) which was trained on whole dataset by running train_cnn() function from cnn.py file.
