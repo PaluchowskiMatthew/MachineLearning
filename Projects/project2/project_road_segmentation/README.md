@@ -31,6 +31,7 @@ The image datasets are available from the course kaggle page here:
 ## File structure
 - Helpers: python files containing helpers for pre-processing, post-processing, perfomance measurements, visualization and submission
 - Models: folder containing all trained models mentioned in the report
+- First approach: folder containing three notebooks containing code from the feature engeneering approach.
 - Baseline.ipynb: implementation of a random baseline
 - KNeighborsClassifier.ipynb: implementation of a K Nearest Neighbors approach
 - MultiLayerPerceptron.ipynb: implementation of a Multi Layer Perceptron approach
@@ -46,9 +47,10 @@ File structure is as follows (alphabetical order):
   - image_handling.py
   - submission_helper.py
 - models
-  - Baseline.ipynb
-  - KNeighborsClassifier.ipynb
-  - Multi Layer Perceptron.ipynb
+  - first_approach
+    - Baseline.ipynb
+    - KNeighborsClassifier.ipynb
+    - MultiLayerPerceptron.ipynb
   - POST
     - secondary_CNN_model.h5
   - primary_CNN_model.h5
@@ -80,3 +82,5 @@ Thus input data should follow file structure as presented below:
 - test_set_images
   - test_1.png
   - ...
+
+\* First approach folder: In the report we compare this method with a CNN method. We conclude that a CNN is the way to go and add the code as reference to the exploration we performed. But it does not run anymore because the helpers have not been maintained.
