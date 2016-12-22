@@ -173,7 +173,6 @@ def extract_data_window(imgs, gts, patch_size, patch_window, image_size, model=F
 	data = np.zeros((num_images*new_size**2, patch_window, patch_window, channels))
 	Y = np.zeros((num_images*(pred_size_label**2), nb_class))
 
-	print(pred_size)
 	for im in range(num_images):
 		img = imgs[im]
 		gt = gts[im]
@@ -222,6 +221,10 @@ def extract_data_model(model_name, patch_size_model, patch_window_model, image_s
 				   optimizer='adadelta',
 				   metrics=['fmeasure'])
 
+	return extract_data_model(model, patch_size_model, patch_window_model, image_size_model, imgs, gts, patch_size, patch_window, image_size)
+
+
+def extract_data_model(model, patch_size_model, patch_window_model, image_size_model, imgs, gts, patch_size, patch_window, image_size):
 	output_size_model = int(image_size_model/patch_size_model)
 
 	# extract sliding window input to make predictions with the first model

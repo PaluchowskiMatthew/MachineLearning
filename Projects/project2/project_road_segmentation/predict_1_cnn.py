@@ -1,7 +1,7 @@
 """
 	********* PCML: MINIPROJECT 2 ROAD SEGEMENTATION ***********************
 
-	This function predicts the images of the test set and creat a submission file.
+	This function predicts the images of the test set and creates a submission file.
 
 	Function predict():
 		Inputs:
@@ -24,11 +24,15 @@ import matplotlib.image as mpimg
 import matplotlib.pyplot as plt
 from PIL import Image
 
-model = load_model('models/windows_8x8.h5')
+### IMPORT PRIMARY MODEL AND POST-PROCESSING MODEL ###
+MODEL_NAME = "windows_8x8.h5"
+POST_MODEL_NAME = "post_windows_8x8.h5"
+
+model = load_model('models/' + MODEL_NAME)
 model.compile(loss='categorical_crossentropy',
                    optimizer='adadelta',
                    metrics=['fmeasure'])
-model_post = load_model("models/POST/weights-improvement-00-0.93.h5")
+model_post = load_model('models/POST/' + POST_MODEL_NAME)
 model_post.compile(loss='categorical_crossentropy',
                    optimizer='adadelta',
                    metrics=['fmeasure'])

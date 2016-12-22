@@ -35,12 +35,15 @@ def masks_to_submission(submission_filename, *image_filenames):
         for fn in image_filenames[0:]:
             f.writelines('{}\n'.format(s) for s in mask_to_submission_strings(fn))
 
-
-if __name__ == '__main__':
-    submission_filename = 'cnn_try1.csv'
-    image_filenames = []
-    for i in range(1, 51):
-        image_filename = 'prediction_' + '%.1d' % i + '.png'
-        print (image_filename)
-        image_filenames.append(image_filename)
-    masks_to_submission(submission_filename, *image_filenames)
+def label_to_img(imgwidth, imgheight, w, h, labels):
+    array_labels = np.zeros([imgwidth, imgheight])
+    idx = 0
+    for i in range(0,imgheight,h):
+        for j in range(0,imgwidth,w):
+            if labels[idx] > 0.5:
+                l = 0
+            else:
+                l = 1
+            array_labels[j:j+w, i:i+h] = l
+            idx = idx + 1
+    return array_labels
