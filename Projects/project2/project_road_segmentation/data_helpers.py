@@ -76,17 +76,18 @@ def value_to_2d_class(v, threshold=0.25):
 	else:
 		return [0, 1]
 
-def extract_data_simple(imgs, gt, patch_size, categorical=True):
+def extract_data_simple(imgs, gts, patch_size, categorical=True):
 	img_patches = [img_crop(imgs[i], patch_size, patch_size) for i in range(imgs.shape[0])]
 	data = [img_patches[i][j] for i in range(len(img_patches)) for j in range(len(img_patches[i]))]
 
-	gt_patches = [img_crop(gt_imgs[i], IMG_PATCH_SIZE, IMG_PATCH_SIZE) for i in range(num_images)]
-	data = numpy.asarray([gt_patches[i][j] for i in range(len(gt_patches)) for j in range(len(gt_patches[i]))])
+	gt_patches = [img_crop(gts[i], patch_size, patch_size) for i in range(gts.shape[0])]
+	gt_data = numpy.asarray([gt_patches[i][j] for i in range(len(gt_patches)) for j in range(len(gt_patches[i]))])
+
 	if categorical:
-		labels = numpy.asarray([value_to_2d_class(numpy.mean(data[i])) for i in range(len(data))])
+		labels = numpy.asarray([value_to_2d_class(numpy.mean(gt_data[i])) for i in range(len(data))])
 		return numpy.asarray(data), numpy.asarray(labels)
 	else:
-		labels = numpy.asarray([value_to_class(numpy.mean(data[i])) for i in range(len(data))])
+		labels = numpy.asarray([value_to_class(numpy.mean(gt_data[i])) for i in range(len(data))])
 		return numpy.asarray(data), labels.astype(numpy.float32)
 
 def extract_data_window(imgs, gts, patch_size, patch_window, image_size, model=False, output_size_model=50):
@@ -115,7 +116,6 @@ def extract_data_window(imgs, gts, patch_size, patch_window, image_size, model=F
 	data = np.zeros((num_images*new_size**2, patch_window, patch_window, channels))
 	Y = np.zeros((num_images*(pred_size_label**2), nb_class))
 
-	print(pred_size)
 	for im in range(num_images):
 		img = imgs[im]
 		gt = gts[im]
@@ -142,13 +142,16 @@ def extract_data_window(imgs, gts, patch_size, patch_window, image_size, model=F
 	return data, Y
 
 def extract_data_model(model_name, patch_size_model, patch_window_model, image_size_model, imgs, gts, patch_size, patch_window, image_size):
-	# load model of first cnn
 	MODEL_PATH = 'models/' + model_name
 	model = load_model(MODEL_PATH)
 	model.compile(loss='categorical_crossentropy',
 				   optimizer='adadelta',
 				   metrics=['fmeasure'])
 
+	return extract_data_model(model, patch_size_model, patch_window_model, image_size_model, imgs, gts, patch_size, patch_window, image_size)
+
+
+def extract_data_model(model, patch_size_model, patch_window_model, image_size_model, imgs, gts, patch_size, patch_window, image_size):
 	output_size_model = int(image_size_model/patch_size_model)
 
 	# extract sliding window input to make predictions with the first model
