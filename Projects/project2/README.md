@@ -34,10 +34,10 @@ The image datasets are available from the course kaggle page here:
 - Baseline.ipynb: implementation of a random baseline
 - KNeighborsClassifier.ipynb: implementation of a K Nearest Neighbors approach
 - Multi Layer Perceptron.ipynb: implementation of a Multi Layer Perceptron approach
-- primary_cnn.py: implementation of first neural network that performs road segmentation on patches of the provided images
-- post_padded.py: implementation of post processing neural network that tries to clean up the predictions of the first neural network. It works on the predictions from the first CNN and tries to predict the center of a larger patch.
+- primary_cnn.py: implementation of first neural network that performs road segmentation on patches of the provided images. WARNING: This script was runned on AWS g2.2xlarge instance on GPU and it took significant amount of time. It is not recommended to run it on a laptop.
+- post_padded.py: implementation of post processing neural network that tries to clean up the predictions of the first neural network. It works on the predictions from the first CNN and tries to predict the center of a larger patch. WARNING: This script was runned on AWS g2.2xlarge instance on GPU and it took significant amount of time. It is not recommended to run it on a laptop.
 - predictions.py: the predict() function takes a primary neural net and a post processing neural net and uses them to make a prediction and outputs a submission file.
-- primary_CNN_model.h5: Primary CNN model file stored in [Hierarchical Data Format](https://en.wikipedia.org/wiki/Hierarchical_Data_Format) (.h5) which was trained on whole dataset by running train_cnn() function from cnn.py file.
+- primary_CNN_model.h5: Primary CNN model file stored in [Hierarchical Data Format](https://en.wikipedia.org/wiki/Hierarchical_Data_Format) (.h5) which was trained on whole dataset by running train_cnn() function from cnn.py file. 
 - secondary_CNN_model.h5: Secondary CNN model file stored in [Hierarchical Data Format](https://en.wikipedia.org/wiki/Hierarchical_Data_Format) (.h5) which was trained on whole dataset by running post_padd_sec() function from post_cnn.py file.
 - run.py: script file for creating our top Kaggle predictions based on the two aforementioned models.
 
