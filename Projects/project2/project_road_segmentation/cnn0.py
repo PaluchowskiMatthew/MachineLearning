@@ -23,6 +23,7 @@ from keras.datasets import mnist
 from keras.models import Sequential
 from keras.layers import Dense, Dropout, Activation, Flatten, SpatialDropout2D
 from keras.layers import Convolution2D, MaxPooling2D
+from keras.preprocessing.image import ImageDataGenerator
 from keras.utils import np_utils
 from keras.models import load_model
 from keras.optimizers import SGD
@@ -32,7 +33,7 @@ from image_handling import *
 
 
 def extract_d(train_range, train_data_filename, file_str, PATCH_UNIT, PATCH_WINDOW, img_SIZE):
- 
+
 	 # **** LOAD IMAGES ***********************
 	w = int((PATCH_WINDOW-1)/2)
 
@@ -96,11 +97,11 @@ def extract_l(train_range, train_labels_filename, PATCH_UNIT, PATCH_WINDOW):
 	return Y
 
 # CALL THIS FUNCTION TO TRAIN FIRST NEURAL NET
-def train_cnn(model_name='dummy.h5'):
+def train_cnn(model_name='dummy.h5', two=True, three=True):
 
 	# ********** PARAMETERS **********************************************
 	# Number of images to used for training this neural network
-	NUMBER_IMGS = 50
+	NUMBER_IMGS = 10
 	# Ratio of patches in the train and test set
 	TRAIN_RATIO = 0.8
 	# RGB has 3 channels
@@ -115,7 +116,7 @@ def train_cnn(model_name='dummy.h5'):
 	IMG_PATCH_SIZE = 8
 	IMG_WINDOW = 17
 	# Epochs to be trained
-	nb_epoch = 12
+	nb_epoch = 20
 	# number of convolutional filters to use
 	nb_filters_layer1 = 64
 	nb_filters_layer2 = 128
@@ -149,46 +150,28 @@ def train_cnn(model_name='dummy.h5'):
 	Y_train = labels[idx[:train_size]]
 	X_test = data[idx[train_size:]]
 	Y_test = labels[idx[train_size:]]
-	
+
 	# **************** DEFINE THE MODEL ARCHITECTURE *******************
 
 	model = Sequential()
 
-	# Convolution layer with rectified linear activation
-	model.add(Convolution2D(nb_filters_layer1, kernel_size_layer2[0], 
-							kernel_size_layer2[1], border_mode='same',
-							input_shape=input_shape))
-	model.add(Activation('relu'))
+	# 1
+	model.add(Convolution2D(32, 8, 8, border_mode='same', input_shape=input_shape, activation='relu'))
+	model.add(MaxPooling2D(pool_size=(2,2)))
 
-	# Second convolution
-	model.add(Convolution2D(nb_filters_layer2, kernel_size_layer2[0], 
-							kernel_size_layer2[1]))
-	model.add(Activation('relu'))
+	# 2
+	model.add(Convolution2D(64, 4, 4, border_mode='same', input_shape=input_shape, activation='relu'))
 
-	# Third convolution
-	model.add(Convolution2D(nb_filters_layer1, kernel_size_layer1[0], 
-							kernel_size_layer2[1]))
-	model.add(Activation('relu'))
+	# 3
+	model.add(Convolution2D(64, 8, 8, border_mode='same', input_shape=input_shape, activation='relu'))
 
-	# Pooling and dropout
-	model.add(MaxPooling2D(pool_size=pool_size))
-	model.add(SpatialDropout2D(0.25))
-
-	# Full-connected layers
+	#4
 	model.add(Flatten())
-
-	model.add(Dense(1024))
+	model.add(Dense(265))
 	model.add(Activation('relu'))
 	model.add(Dropout(0.25))
 
-	model.add(Dense(512))
-	model.add(Activation('relu'))
-
-	# Dropout to avoid overfitting
-	model.add(Dropout(0.5))
-
-	#Fully-connected layer to ouptut the resulting class
-	model.add(Dense(nb_classes))
+	model.add(Dense(2))
 	model.add(Activation('softmax'))
 
 	# Compile the model before training
