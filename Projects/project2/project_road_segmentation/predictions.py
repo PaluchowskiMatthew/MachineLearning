@@ -1,7 +1,38 @@
 """
-	********* PCML: MINIPROJECT 2 ROAD SEGEMENTATION ***********************
+	 ****************** PCML: MINIPROJECT 2 ROAD SEGEMENTATION ******************
+			authors: Mateusz Paluchowski, Marie Drieghe and Lazare Girardin
+"""
+# ************ IMPORT LIBRARIES ************************************************
+from keras.models import load_model
+from helpers.submission_helper import *
+from helpers.data_helpers import *
+import matplotlib.image as mpimg
+from PIL import Image
 
-	This function predicts the images of the test set and creat a submission file. 
+"""
+Notation Cheatsheet:
+(ORIGINAL) - function provided by TAs and used in unmodified form
+(MODIFIED) - function provided by TAs but modified for our purpose
+(CUSTOM) - function created by us
+"""
+
+### IMPORT PRIMARY MODEL AND POST-PROCESSING MODEL ###
+MODEL_NAME = "windows_8x8.h5"
+POST_MODEL_NAME = "weights-improvement-00-0.93.h5"
+
+model = load_model('models/' + MODEL_NAME)
+model.compile(loss='categorical_crossentropy',
+                   optimizer='adadelta',
+                   metrics=['fmeasure'])
+model_post = load_model('models/POST/' + POST_MODEL_NAME)
+model_post.compile(loss='categorical_crossentropy',
+                   optimizer='adadelta',
+                   metrics=['fmeasure'])
+
+def predict():
+	"""
+	(CUSTOM)
+	This function predicts the images of the test set and creates a submission file.
 
 	Function predict():
 		Inputs:
@@ -11,100 +42,59 @@
 		Outputs:
 			-Prediction folder with the images of the predictions of tests images
 			-Submission .CSV file for submission on kaggle
-
-
-	authors: Maateusz Paaluchowski, Marie Drieghe and Lazare Girardin
-"""
-# ************ IMPORT LIBRARIES ************************************************
-from keras.models import load_model
-from mask_to_submission import *
-from image_handling import *
-import numpy
-import matplotlib.image as mpimg
-import matplotlib.pyplot as plt
-from PIL import Image
-
-def predict(model_name, post_model_name):
-
-	# *********** PARAMETERS ********************************************************
-	# Patches used by first CNN
-	IMG_PATCH_SIZE = 8
-	# Window used by second CNN
-	PATCH_WINDOW = 21
-	# Size of the test images
-	IMG_SIZE = 608
-
-
-	data_dir = 'test_set_images/'
-	pred_dir = 'predictions/'
-
-	#print("launch post")
-	#post_process(model_name, [71, 100])
-
-	model_path = 'models/' + model_name
-
 	"""
-	main_model = load_model(model_path)
-	main_model.compile(loss='categorical_crossentropy',
-				   optimizer='adadelta',
-				   metrics=['fmeasure'])
-	"""
-	model_path2 = 'models/POST/' + post_model_name
-	model_post = load_model(model_path2)
-	model_post.compile(loss='categorical_crossentropy',
-				   optimizer='adadelta',
-				   metrics=['fmeasure'])
+	# Parameters of first CNN
+	MODEL_PATCH_SIZE = 8
+	MODEL_WINDOW_SIZE = 17
+	MODEL_IMAGE_SIZE = 608
 
-	new_size = int(IMG_SIZE/IMG_PATCH_SIZE)
-	#w = int((PATCH_WINDOW-1)/2)
-	#size_tr = int(new_size - 2*w) 
+	# Parameters of post CNN
+	POST_PATCH_SIZE = 8
+	POST_WINDOW_SIZE = 21
+	POST_IMAGE_SIZE = 608
 
-	for i in range(1, 51):
+	DATA_DIR = 'test_set_images/'
+	PRED_DIR = 'final_predictions/'
+
+	if not os.path.exists(PRED_DIR):
+		os.makedirs(PRED_DIR)
+
+	N_TEST_IMG = 10
+
+	pred_size = int(MODEL_IMAGE_SIZE/MODEL_PATCH_SIZE)
+
+	for i in range(1,N_TEST_IMG):
 		imageid = "test_%.1d" % i
-		image_filename = data_dir + imageid + ".png"
+		image_filename = DATA_DIR + imageid + ".png"
+
 		if os.path.isfile(image_filename):
-			print ('Predicting' + image_filename)
+			print ('Predicting ' + image_filename)
 			img = mpimg.imread(image_filename)
+			img = img.reshape((1, img.shape[0], img.shape[1], img.shape[2]))
+			gt = np.zeros(img.shape)
 
-			input_cnn_post = extract_data_padded(model_name, [i, i], data_dir, "test_%.1d", IMG_PATCH_SIZE, PATCH_WINDOW, IMG_SIZE)
-			total_img = model_post.predict_classes(input_cnn_post, verbose=1)
-			"""
-			data_cnn_1 = numpy.asarray(img_crop(img, IMG_PATCH_SIZE, IMG_PATCH_SIZE))
+			data, y = extract_data_model(model, MODEL_PATCH_SIZE, MODEL_WINDOW_SIZE, MODEL_IMAGE_SIZE, img, gt, POST_PATCH_SIZE, POST_WINDOW_SIZE, POST_IMAGE_SIZE)
 
-			predictions_patch_cnn_1 = main_model.predict_classes(data_cnn_1, verbose=1)
+			total_img = model_post.predict_classes(data, verbose=1)
 
-			data_cnn_2 = numpy.zeros((size_tr**2, PATCH_WINDOW, PATCH_WINDOW,1))
-			for x in range(w,size_tr+w):
-				x_off = size_tr*(x-w) # x-axis offset
-				for y in range(w, size_tr+w):
-					y_off = (y-w) # y-axis offset
-					data_cnn_2[x_off+y_off, :, :] = numpy.reshape(predictions_patch_cnn_1, (new_size, new_size, 1))[(x-w):(x+w+1), (y-w):(y+w+1)]
-
-			predictions_patch_cnn_2 = model_post.predict_classes(data_cnn_2, verbose=1)
-
-			total_img = numpy.reshape(predictions_patch_cnn_1, (new_size, new_size))
-			center_img = numpy.reshape(predictions_patch_cnn_2, (size_tr, size_tr))
-			for x in range(w, size_tr+w):
-				for y in range(w, size_tr+w):
-					total_img[x, y] = center_img[x-w, y-w]
-			"""
-
-			img_prediction = label_to_img(img.shape[0], img.shape[1], 
-										  IMG_PATCH_SIZE, IMG_PATCH_SIZE, 
+			img_prediction = label_to_img(img.shape[1], img.shape[2],
+										  POST_PATCH_SIZE, POST_PATCH_SIZE,
 										  total_img)
 
 			pimg = Image.fromarray((img_prediction*255.0).astype(np.uint8))
-			pimg.save(pred_dir + "prediction_" + str(i) + ".png")
+			pimg = pimg.transpose(Image.FLIP_LEFT_RIGHT)
+			pimg = pimg.transpose(Image.ROTATE_90)
+
+			pimg.save(PRED_DIR + "prediction_" + str(i) + ".png")
 		else:
 			print ('File ' + image_filename + ' does not exist')
 
-
 	print("\n Done predicting")
-	submission_filename = 'lastOUT_RENAME.csv'
+
+	submission_filename = PRED_DIR + 'new_submission.csv'
 	image_filenames = []
-	for i in range(1, 51):
-		image_filename = 'predictions/prediction_' + str(i) + '.png'
-		print (image_filename)
+	for i in range(1, N_TEST_IMG):
+		image_filename = PRED_DIR + 'prediction_' + str(i) + '.png'
 		image_filenames.append(image_filename)
 		masks_to_submission(submission_filename, *image_filenames)
 	print("Submission file finished")
