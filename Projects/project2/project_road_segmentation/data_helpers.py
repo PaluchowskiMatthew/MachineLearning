@@ -2,6 +2,8 @@ import os
 import matplotlib.image as mpimg
 import numpy as np
 
+from keras.models import load_model
+
 def load_img_gt(data_range):
 	DATA_DIR = 'training/'
 	IMAGES_FOLDER = DATA_DIR + 'images/'
@@ -87,31 +89,44 @@ def extract_data_simple(imgs, gt, patch_size, categorical=True):
 		labels = numpy.asarray([value_to_class(numpy.mean(data[i])) for i in range(len(data))])
 		return numpy.asarray(data), labels.astype(numpy.float32)
 
-def extract_data_window(imgs, gts, patch_size, patch_window, image_size):
+def extract_data_window(imgs, gts, patch_size, patch_window, image_size, model=False, output_size_model=50):
 	nb_class = 2
 	w = int((patch_window-1)/2)
 	num_images = len(imgs)
-	pred_size = image_size
 	pred_size_label = int(image_size/patch_size)
+
+	if model:
+		p = 0
+		step = 1
+		channels = 1
+		pred_size = output_size_model
+	else:
+		p = int(patch_size/2)
+		step = patch_size
+		channels = 3
+		pred_size = image_size
+
 	pad_size = pred_size + 2*w
 
-	pad_imgs = np.zeros((num_images, pad_size, pad_size, 3))
+	pad_imgs = np.zeros((num_images, pad_size, pad_size, channels))
 	labels = np.zeros((num_images, pred_size_label, pred_size_label, nb_class))
 
 	new_size = int((image_size)/patch_size)
-	data = np.zeros((num_images*new_size**2, patch_window, patch_window, 3))
+	data = np.zeros((num_images*new_size**2, patch_window, patch_window, channels))
 	Y = np.zeros((num_images*(pred_size_label**2), nb_class))
 
+	print(pred_size)
 	for im in range(num_images):
 		img = imgs[im]
 		gt = gts[im]
+
 		padded = np.pad(img, ((w, w), (w, w), (0, 0)), 'symmetric')
 		pad_imgs[im, :, :, :] = padded
 
 		im_off = im*new_size**2
-		for i,x in enumerate(range(w+4, w+pred_size, patch_size)):
+		for i,x in enumerate(range(w+p, w+pred_size, step)):
 			x_off = new_size*i
-			for j, y in enumerate(range(w+4, w+pred_size, patch_size)):
+			for j, y in enumerate(range(w+p, w+pred_size, step)):
 				data[im_off+x_off+j, :, :, :] = pad_imgs[im, (x-w):(x+w+1), (y-w):(y+w+1), :]
 
 		img_patch = img_crop(gt, patch_size, patch_size)
@@ -125,3 +140,20 @@ def extract_data_window(imgs, gts, patch_size, patch_window, image_size):
 				Y[im_off+x_off+y, :] = labels[im, x, y, :]
 
 	return data, Y
+
+def extract_data_model(model_name, patch_size_model, patch_window_model, image_size_model, imgs, gts, patch_size, patch_window, image_size):
+	# load model of first cnn
+	MODEL_PATH = 'models/' + model_name
+	model = load_model(MODEL_PATH)
+	model.compile(loss='categorical_crossentropy',
+				   optimizer='adadelta',
+				   metrics=['fmeasure'])
+
+	output_size_model = int(image_size_model/patch_size_model)
+
+	# extract sliding window input to make predictions with the first model
+	data, Y = extract_data_window(imgs, gts, patch_size_model, patch_window_model, image_size_model)
+	predictions = model.predict_classes(data, verbose=1)
+	pred_imgs = np.reshape(predictions, (len(imgs), output_size_model, output_size_model, 1))
+
+	return extract_data_window(pred_imgs, gts, patch_size, patch_window, image_size, True, output_size_model)

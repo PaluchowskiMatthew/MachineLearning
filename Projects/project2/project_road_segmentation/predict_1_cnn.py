@@ -1,7 +1,7 @@
 """
 	********* PCML: MINIPROJECT 2 ROAD SEGEMENTATION ***********************
 
-	This function predicts the images of the test set and creat a submission file. 
+	This function predicts the images of the test set and creat a submission file.
 
 	Function predict():
 		Inputs:
@@ -24,18 +24,18 @@ import matplotlib.image as mpimg
 import matplotlib.pyplot as plt
 from PIL import Image
 
-model = load_model('models/windows.h5')
+model = load_model('models/windows_8x8.h5')
 model.compile(loss='categorical_crossentropy',
                    optimizer='adadelta',
                    metrics=['fmeasure'])
-model_post = load_model('models/POST/post_windows.h5')
+model_post = load_model("models/POST/weights-improvement-00-0.93.h5")
 model_post.compile(loss='categorical_crossentropy',
                    optimizer='adadelta',
                    metrics=['fmeasure'])
 
 
 def extract_d(train_range, train_data_filename, file_str, PATCH_UNIT, PATCH_WINDOW, img_SIZE):
- 
+
 	 # **** LOAD IMAGES ***********************
 	w = int((PATCH_WINDOW-1)/2)
 
@@ -116,13 +116,7 @@ def predict_sec():
 
 
 	data_dir = 'test_set_images/'
-	pred_dir = 'predictions_1CNN_post/'
-
-	#model_path = 'models/' + model_name
-	#model = load_model(model_path)
-	#model.compile(loss='categorical_crossentropy',
-	#			   optimizer='adadelta',
-	#			   metrics=['fmeasure'])
+	pred_dir = 'predictions_CNN_post/'
 
 	new_size = int(IMG_SIZE/IMG_PATCH_SIZE)
 
@@ -138,8 +132,8 @@ def predict_sec():
 
 			total_img = model_post.predict_classes(data, verbose=1)
 
-			img_prediction = label_to_img(img.shape[0], img.shape[1], 
-										  IMG_PATCH_SIZE, IMG_PATCH_SIZE, 
+			img_prediction = label_to_img(img.shape[0], img.shape[1],
+										  IMG_PATCH_SIZE, IMG_PATCH_SIZE,
 										  total_img)
 			pimg = Image.fromarray((img_prediction*255.0).astype(np.uint8))
 			pimg = pimg.transpose(Image.FLIP_LEFT_RIGHT)

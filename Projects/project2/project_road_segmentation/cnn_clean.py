@@ -71,6 +71,8 @@ def train_cnn(model_name='dummy.h5'):
 	X_test = data[idx[train_size:]]
 	Y_test = labels[idx[train_size:]]
 
+	### Neural Net ###
+
 	model = Sequential()
 
 	# Convolution layer with rectified linear activation
