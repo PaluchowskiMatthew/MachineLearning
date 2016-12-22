@@ -4,7 +4,33 @@ import numpy as np
 
 from keras.models import load_model
 
+"""
+Notation Cheatsheet:
+(ORIGINAL) - function provided by TAs and used in unmodified form
+(MODIFIED) - function provided by TAs but modified for our purpose
+(CUSTOM) - function created by us
+"""
+
 def load_img_gt(data_range):
+	""" (CUSTOM)
+	Function loading input images alongside ground truth images.
+	WARNING: directory tree needs to be like
+	training:
+		- images (satelite images)
+			- satImage_1.jpg
+			- ...
+		- groundtruth (binary groundtruth image)
+			- satImage_1.jpg
+			- ...
+	and images must have the same name in both directories.
+
+	Args:
+		- data_range ([]): range of images to load as a list containing beginning and end img
+			Example: [1,100]
+
+    Returns:
+        imgs, gts (([],[])): 2-tuple of lists containiing images and ground truths
+    """
 	DATA_DIR = 'training/'
 	IMAGES_FOLDER = DATA_DIR + 'images/'
 	GROUNDTRUTH_FOLDER = DATA_DIR + 'groundtruth/'
@@ -34,6 +60,17 @@ def load_img_gt(data_range):
 	return imgs, gts
 
 def img_crop(im, w, h):
+	"""(ORIGINAL) Crops image into n patches of h x w size
+
+    Args:
+        im (3D array): Image as a 3D array
+        w (int): width of a patch
+        h (int): height of a patch
+
+    Returns:
+        [ [[[]]] ]:  List of patches as 3D/2D array (binary/RGB)
+
+    """
     list_patches = []
     imgwidth = im.shape[0]
     imgheight = im.shape[1]
@@ -47,49 +84,70 @@ def img_crop(im, w, h):
             list_patches.append(im_patch)
     return list_patches
 
-def value_to_class(v, threshold=0.25):
+def value_to_class(img, threshold=0.25):
 	"""(ORIGINAL) Extract image/patch value to binary class of road(1)/non-road(0)
 	Args:
-	img (numpy array): Original image/patch
+		img (numpy array): Original image/patch
 		threshold (double): classifing threshold
 	Returns:
 		int: class label
 	"""
-	df = np.sum(v)
+	df = np.sum(img)
 	if df > threshold:
 		return 1
 	else:
 		return 0
 
-def value_to_2d_class(v, threshold=0.25):
+def value_to_2d_class(img, threshold=0.25):
 	"""(MODIFIED) Extract image/patch value to 2d class of road(1)/non-road(0)
 		Args:
-		img (numpy array): Original image/patch
+			img (numpy array): Original image/patch
 			threshold (double): classifing threshold
 		Returns:
-			int: class label
+			[int, int]: class label in matrix form
 	"""
-	mean = np.mean(v)
+	mean = np.mean(img)
 	df = np.sum(mean)
 	if df > threshold:
 		return [1, 0] #	***** category matrix
 	else:
 		return [0, 1]
 
-def extract_data_simple(imgs, gt, patch_size, categorical=True):
-	img_patches = [img_crop(imgs[i], patch_size, patch_size) for i in range(imgs.shape[0])]
+def extract_data_simple(imgs, gt_imgs, patch_size, categorical=True):
+	"""(CUSTOM) Extract image/patch value either to 1D or to 2D class of road(1)/non-road(0)
+		Args:
+			imgs ([numpy array]): List of input images
+			gt_imgs ([numpy array]): List of ground truths
+			patch_size (int): size of the square patch in pixels.
+			categorical (bool): flag indicating whether if 1D or 2D classification should be used
+		Returns:
+			int: class label
+	"""
+	img_patches = [img_crop(imgs[i], patch_size, patch_size) for i in range(len(imgs))]
 	data = [img_patches[i][j] for i in range(len(img_patches)) for j in range(len(img_patches[i]))]
 
-	gt_patches = [img_crop(gt_imgs[i], IMG_PATCH_SIZE, IMG_PATCH_SIZE) for i in range(num_images)]
-	data = numpy.asarray([gt_patches[i][j] for i in range(len(gt_patches)) for j in range(len(gt_patches[i]))])
+	gt_patches = [img_crop(gt_imgs[i], patch_size, patch_size) for i in range(len(gt_imgs))]
+	data = np.asarray([gt_patches[i][j] for i in range(len(gt_patches)) for j in range(len(gt_patches[i]))])
 	if categorical:
-		labels = numpy.asarray([value_to_2d_class(numpy.mean(data[i])) for i in range(len(data))])
-		return numpy.asarray(data), numpy.asarray(labels)
+		labels = np.asarray([value_to_2d_class(np.mean(data[i])) for i in range(len(data))])
+		return np.asarray(data), np.asarray(labels)
 	else:
-		labels = numpy.asarray([value_to_class(numpy.mean(data[i])) for i in range(len(data))])
-		return numpy.asarray(data), labels.astype(numpy.float32)
+		labels = np.asarray([value_to_class(np.mean(data[i])) for i in range(len(data))])
+		return np.asarray(data), labels.astype(np.float32)
 
 def extract_data_window(imgs, gts, patch_size, patch_window, image_size, model=False, output_size_model=50):
+	"""(CUSTOM) TODO: Lazare's explanation
+		Args:
+			imgs ([numpy array]): List of input images
+			gts ([numpy array]): List of ground truths
+			patch_size (int): size of the square patch in pixels.
+			patch_window (int): size of the slinding window
+			image_size (int): size of the single input image
+			model (bool): flag indicating whether input images are output from the previous model (binary images) or not
+			output_size_model (int): goes along the model flag - if model==True, output_size_model= number of imgs returned by first model.
+		Returns:
+			data, Y: extracted patches and lables in form accepted by Keras model.
+	"""
 	nb_class = 2
 	w = int((patch_window-1)/2)
 	num_images = len(imgs)
@@ -142,6 +200,21 @@ def extract_data_window(imgs, gts, patch_size, patch_window, image_size, model=F
 	return data, Y
 
 def extract_data_model(model_name, patch_size_model, patch_window_model, image_size_model, imgs, gts, patch_size, patch_window, image_size):
+	"""(CUSTOM) TODO: Lazare's explanation
+		Args:
+			model_name (string): name of the model to load with extension.
+				Example: 'model.h5'
+			patch_size_model (int): patch size for the first model
+			patch_window_model (int): size of the sliding window for the first model
+			image_size_model (int): size of the single input image for the first model
+			imgs ([numpy array]): List of input images
+			gts ([numpy array]): List of ground truths
+			patch_size (int): size of the square patch in pixels.
+			patch_window (int): size of the slinding window
+			image_size (int): size of the single input image
+		Returns:
+			data, Y: extracted patches and lables in form accepted by Keras model.
+	"""
 	# load model of first cnn
 	MODEL_PATH = 'models/' + model_name
 	model = load_model(MODEL_PATH)
