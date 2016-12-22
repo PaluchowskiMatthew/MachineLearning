@@ -141,7 +141,9 @@ def extract_data_simple(imgs, gt_imgs, patch_size, categorical=True):
 		return np.asarray(data), labels.astype(np.float32)
 
 def extract_data_window(imgs, gts, patch_size, patch_window, image_size, model=False, output_size_model=50):
-	"""(CUSTOM) TODO: Lazare's explanation
+	"""(CUSTOM) This function extracts input patches and according labels to feed to a neural network.
+				It uses a sliding window to predict a smaller center patch.
+				See report Figure @/pre-processing CNN for a detailed explanation.
 		Args:
 			imgs ([numpy array]): List of input images
 			gts ([numpy array]): List of ground truths
