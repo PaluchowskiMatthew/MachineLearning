@@ -20,12 +20,12 @@ The image datasets are available from the course kaggle page here:
 
 <a name="Frameworks"/>
 ## Libraries and Frameworks
-- [NumPy](http://www.numpy.org/)
-- [Scikit-learn](http://scikit-learn.org/)
-- [Scikit-image](http://scikit-image.org/)
+- [NumPy v.'1.11.1'](http://www.numpy.org/)
+- [Scikit-learn v.'0.18.1'](http://scikit-learn.org/)
+- [Scikit-image v.'0.12.3'](http://scikit-image.org/)
 - [Pillow](https://pillow.readthedocs.io/en/3.4.x/)
-- [Keras](https://keras.io/)
-  - [TensorFlow](https://www.tensorflow.org/) as backend
+- [Keras v.'1.1.2'](https://keras.io/)
+  - [TensorFlow v.'0.12.0-rc1'](https://www.tensorflow.org/) as backend
 
 <a name="FileStructure"/>
 ## File structure
