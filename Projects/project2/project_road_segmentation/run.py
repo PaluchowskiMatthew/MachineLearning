@@ -100,3 +100,6 @@ def predict():
 	print("Submission file finished")
 
 	return
+
+if __name__ == '__main__':
+    predict()
